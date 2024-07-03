@@ -23,6 +23,10 @@ from functools import partial
 import math  # Add this import
 import argparse
 import os
+from sklearn.exceptions import ConvergenceWarning
+import re
+import warnings
+
 
 
 # Set locale to ensure dot-separated decimal representation
@@ -97,9 +101,34 @@ def read_clients(file_path, cpu_per_100mhz):
 
 # Generate initial ODC locations using KMeans
 def generate_initial_odcs(clients, num_initial_odcs):
+    distinct_clusters = 0
+    n_clusters = 0
     lat_lon = np.array([[c["latitude"], c["longitude"]] for c in clients])
-    kmeans = KMeans(n_clusters=num_initial_odcs, random_state=0).fit(lat_lon)
-    initial_odcs = kmeans.cluster_centers_
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", ConvergenceWarning)
+        kmeans = KMeans(n_clusters=num_initial_odcs, random_state=0).fit(lat_lon)
+        initial_odcs = kmeans.cluster_centers_
+        # Check if a ConvergenceWarning was raised
+        if w and issubclass(w[-1].category, ConvergenceWarning):
+            warning_message = str(w[-1].message)
+            print("ConvergenceWarning was raised")
+            print(warning_message)
+            
+            # Extract numbers from the warning message using regex
+            numbers = re.findall(r'\d+', warning_message)
+            if len(numbers) >= 2:
+                distinct_clusters = int(numbers[0])
+                n_clusters = int(numbers[1])
+                print(f"Number of distinct clusters: {distinct_clusters}")
+                print(f"n_clusters: {n_clusters}")
+                kmeans = KMeans(n_clusters=distinct_clusters, random_state=0).fit(lat_lon)
+                initial_odcs = kmeans.cluster_centers_
+                
+                
+            else:
+                print("Could not extract the required numbers from the warning message.")
+        else:
+            print("No ConvergenceWarning")
     return [(lat, lon) for lat, lon in initial_odcs]
 
 # Function to evaluate a single trial
@@ -279,11 +308,13 @@ def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, d
     fiberlength = {odc: 0 for odc in selected_odcs}
     client_associations = []
     odc_indices = [i for i, odc in enumerate(initial_odcs) if odc in selected_odcs]
-
+    #print(len(selected_odcs))
     for i, client in enumerate(clients):
         if selected_odcs:
             selected_distances = distances[i, odc_indices]
+            #print(len(selected_distances))
             closest_odc_idx = np.argmin(selected_distances)
+            #print(closest_odc_idx)
             closest_odc = selected_odcs[closest_odc_idx]
             capacities[closest_odc] += client["cpu_cores"]
             client_associations.append((client["oru_id"], closest_odc))
@@ -297,6 +328,7 @@ def generate_frame(gen, num_trials, solution, clients, max_distance, max_capacit
     if not selected_indices:
         return None  # Skip if no ODCs are selected
     selected_odcs = [initial_odcs[i] for i in selected_indices]
+    #print(selected_indices)
 
     capacities, client_associations,_ = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
     active_odcs = {odc: capacity for odc, capacity in capacities.items() if capacity > 0}
@@ -353,32 +385,50 @@ def main():
     
     
     parser = argparse.ArgumentParser()
+    #problem parameters
     parser.add_argument("-c", "--cpuper100", type=str,default='16',help='cpus per 100MHz')
-    parser.add_argument("-d", "--maxdistance", type=str, default='20', help='Max distance')
+    parser.add_argument("-d", "--maxdistance", type=str, default='3', help='Max distance')
     parser.add_argument("-cp", "--capacity", type=str,default='2560', help='Max capacity')
+    parser.add_argument("-o", "--odcs", type=str, default='0',help='No. of Initial ODCs')
+    #GA parameters
     parser.add_argument("-t", "--trials", type=str, default='60',help='no. of trials"')
     parser.add_argument("-pop", "--population", type=str, default='300',help='Population Size')
-    parser.add_argument("-p", "--process", type=str, default='8' ,help='No. of Process')
-    parser.add_argument("-o", "--odcs", type=str, default='50',help='No. of Initial ODCs')
+    parser.add_argument("-p", "--process", type=str, default='8' ,help='No. of Process')    
     # sum of weights must be 1
     parser.add_argument("-wcpu", "--wcpu", type=str, default='0',help='Weight of CPUs per ODC')
-    parser.add_argument("-wodc", "--wodc", type=str, default='1', help='Weight of no. of ODCs')
-    parser.add_argument("-wd", "--wd", type=str, default='0',help='Weight of ORU-ODC distance')
+    parser.add_argument("-wodc", "--wodc", type=str, default='0', help='Weight of no. of ODCs')
+    parser.add_argument("-wd", "--wd", type=str, default='1',help='Weight of ORU-ODC distance')    
+    #Sim parameters
     parser.add_argument("-s", "--seed", type=str, default='1',help='Random State Seed')
-    parser.add_argument("-opd", "--outputDir", type=str, default='',help='Full path where the results will be saved')
+    parser.add_argument("-opd", "--outputDir", type=str, default='/home/ubuntu/',help='Full path where the results will be saved')
 
-    
     args = parser.parse_args()
     cpu_per_100mhz=int(args.cpuper100)
     max_distance = int(args.maxdistance)
     max_capacity = int(args.capacity)
+    num_initial_odcs = int(args.odcs)
     num_trials= int(args.trials)
     population_size = int(args.population)
     no_processes = int(args.process)
-    num_initial_odcs = int(args.odcs)
     obj_weights = [float(args.wcpu), float(args.wodc), float(args.wd)]
     seed = int(args.seed)
     outputDir = args.outputDir
+    
+    print("#### Sim Parameters ####")
+    print("## Problem Parameters ##")
+    print("     cpu_per_100mhz: ", cpu_per_100mhz)
+    print("     max_distance: ", max_distance)
+    print("     max_capacity: ", max_capacity)
+    print("     num_initial_odcs (if 0 means ODCs = RUs): ", num_initial_odcs)
+    print("## NSGAII Parameters ##")
+    print("     num_trials: ", num_trials)
+    print("     population_size: ", population_size)
+    print("     no_processes: ", no_processes)
+    print("     obj_weights: ", obj_weights)
+    print("## Sim Parameters ##")
+    print("     seed: ", seed)
+    print("     outputDir: ", outputDir)
+    print("########################")
     
     ## Set Parameters
     start_time = time.time()
@@ -394,7 +444,9 @@ def main():
     
     ## Read and preprocess datasets
     clients = read_clients('manaus.csv', cpu_per_100mhz) # create dataset
-    initial_odcs = generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
+    if num_initial_odcs == 0:
+        num_initial_odcs = len(clients)# ODCs = O-RUs
+    initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
     distances = precompute_distances(clients, initial_odcs) # distances between ODC and O-RU locations based on haversine formula, where the the earth curvature is considered
   
     ## Create the Problem
@@ -464,7 +516,7 @@ def main():
     
     df_client_association = pd.DataFrame(client_associations,columns=['oru','odc_location'])
     df_capacities = pd.DataFrame(capacities.items(),columns=['odc_locations','capacities'])
-    df_fiberlength = pd.DataFrame(fiberlength.items(),columns=['odc_locations','capacities'])
+    df_fiberlength = pd.DataFrame(fiberlength.items(),columns=['odc_locations','fiberlength'])
     
     df_client_association.to_csv(outputDir+"/data/"+"df_client_association"+".csv")
     df_capacities.to_csv(outputDir+"/data/"+"df_capacities"+".csv")
