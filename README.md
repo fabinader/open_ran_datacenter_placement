@@ -7,8 +7,7 @@ Open RAN Datacente Placement
 ```
 $ chmod +x campaign.sh
 
-$ ./campaign.sh 5
-
+$ ./campaign.sh -j 5 -c 14 -d 11 -C 1000 -o 0
 ```
 
 Code will run 5 times, where each run means a different random seed is used.
