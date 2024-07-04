@@ -512,17 +512,17 @@ def main():
 
     #imageio.mimsave('optimization_process.gif', frames, fps=2)
     
-    os.makedirs(outputDir+"/data", exist_ok=True)
+    #os.makedirs(outputDir+"/data", exist_ok=True)
     
     df_client_association = pd.DataFrame(client_associations,columns=['oru','odc_location'])
     df_capacities = pd.DataFrame(capacities.items(),columns=['odc_locations','capacities'])
     df_fiberlength = pd.DataFrame(fiberlength.items(),columns=['odc_locations','fiberlength'])
     
-    df_client_association.to_csv(outputDir+"/data/"+"df_client_association"+".csv")
-    df_capacities.to_csv(outputDir+"/data/"+"df_capacities"+".csv")
-    df_fiberlength.to_csv(outputDir+"/data/"+"df_fiberlength"+".csv")
+    df_client_association.to_csv(outputDir+"/"+"df_client_association"+".csv")
+    df_capacities.to_csv(outputDir+"/"+"df_capacities"+".csv")
+    df_fiberlength.to_csv(outputDir+"/"+"df_fiberlength"+".csv")
     
-    imageio.mimsave(outputDir+"/data/"+'optimization_process.gif', frames, fps=2)
+    imageio.mimsave(outputDir+"/"+'optimization_process.gif', frames, fps=2)
 
 if __name__ == "__main__":
     main()
