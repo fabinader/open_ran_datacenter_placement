@@ -6,7 +6,7 @@ Open RAN Datacente Placement
 
 1) Create the dataset (Natal or Manaus):
 
-Make sure you have the database from AnatelWebsite in the same folder as the pre-process script. In this repository, we have placed the datebaes from both Natal and Manaus, cities from Brazil. For now, you should choose which dataset you want do create by changing the variable "filename" in the python script. It will create a filtered dataset with the same name you placed in "filename".
+Make sure you have the database from AnatelWebsite in the same folder as the pre-process script. In this repository, we have placed the datebaes from both Natal and Manaus, cities from Brazil. For now, you should choose which dataset you want to create by changing the variable "filename" in the python script. It will create a filtered dataset with the same name you placed in "filename".
 
 ```
 $ python3 preprocess_anatel_city_csv.py
