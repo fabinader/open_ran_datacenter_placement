@@ -16,6 +16,7 @@ from sklearn.cluster import KMeans
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
+from pymoo.termination.default import DefaultSingleObjectiveTermination
 #from pymoo.util.termination.default import SingleObjectiveDefaultTermination
 from pymoo.termination.default import DefaultSingleObjectiveTermination
 #from pymoo.util.display import Display
@@ -460,8 +461,16 @@ def main():
 
     def custom_callback(algorithm):
         best_solution_tracker.update(algorithm)
-        
-    res = minimize(problem, algorithm, termination=('n_gen', num_trials), seed=seed, verbose=True, callback=custom_callback)
+    
+    termination = DefaultSingleObjectiveTermination(
+    xtol=1e-8,  # The algorithm stops if the change in decision variables is less than "xtol" for a period of "period" generations
+    cvtol=1e-8,  # The algortihm stops if the change in constraints violations is less than "cvtol" for a period of "period" generations
+    ftol=1e-8,  # The algortihm stops if the change in objective functions values is less than "ftol" for a period of "period" generations
+    period=60,  # Set the number os generations to evaluate xtol, cvtol and ftol
+    n_max_gen=num_trials  # Set the maximum number of generations the algorithm will run
+    )
+
+    res = minimize(problem, algorithm, termination=termination, seed=seed, verbose=True, callback=custom_callback)
 
     best_solutions_per_generation = best_solution_tracker.best_solutions
     
