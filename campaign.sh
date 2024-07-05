@@ -55,15 +55,16 @@ fi
 # Base directory for the jobs
 base_dir="$(dirname "$(readlink -f "$0")")"
 campaign_dir="${base_dir}/Campaign_${campaign_name}"
+data_dir="${campaign_dir}/data"
 
-# Create campaign directory
-mkdir -p "${campaign_dir}"
+# Create campaign and data directories
+mkdir -p "${data_dir}"
 
 # Loop to create Job directories and run the script
 for ((i=1; i<=num_jobs; i++))
 do
-  job_dir="${campaign_dir}/Job${i}"
-  output_file="${campaign_dir}/Sim_${i}.out"
+  job_dir="${data_dir}/Job${i}"
+  output_file="${data_dir}/Sim_${i}.out"
   mkdir -p "${job_dir}"
   python3 odc_placement_parser.py -c=${cpus} -d=${distance} -cp=${capacity} -t=60 -pop=300 -p=8 -o=${odc} -wcpu=${wcpu} -wodc=${wodc} -wd=${wd} -s=$i -opd="${job_dir}" > "${output_file}" 2>&1
 done

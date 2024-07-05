@@ -444,7 +444,7 @@ def main():
     #obj_weights = [0, 1, 0]  # 40% to maximize no. of CPUs per ODC, 40% for minimizing the no. of ODCs, 20% for minimizing the O-RU <-> ODC distance
     
     ## Read and preprocess datasets
-    clients = read_clients('manaus.csv', cpu_per_100mhz) # create dataset
+    clients = read_clients('Natal.csv', cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
     initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
