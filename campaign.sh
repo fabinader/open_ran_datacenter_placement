@@ -53,7 +53,7 @@ if [ $num_jobs -eq 0 ] || [ $cpus -eq 0 ] || [ $distance -eq 0 ] || [ $capacity 
 fi
 
 # Base directory for the jobs
-base_dir="/home/ubuntu/EmbrapiiCPqD/OpenRanDatacenterPlacement/open_ran_datacenter_placement"
+base_dir="$(dirname "$(readlink -f "$0")")"
 campaign_dir="${base_dir}/Campaign_${campaign_name}"
 data_dir="${campaign_dir}/data"
 

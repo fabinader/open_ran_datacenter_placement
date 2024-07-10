@@ -16,6 +16,7 @@ from sklearn.cluster import KMeans
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
+from pymoo.termination.default import DefaultSingleObjectiveTermination
 #from pymoo.util.termination.default import SingleObjectiveDefaultTermination
 from pymoo.termination.default import DefaultSingleObjectiveTermination
 #from pymoo.util.display import Display
@@ -303,6 +304,64 @@ def plot_solution(clients, best_odcs, client_associations, capacities, max_dista
     fig.tight_layout()
     return fig
 
+def plot_results(res, initial_odcs, clients, trial,output_directory):
+    fig,ax_map=plt.subplots(figsize=(8, 8))
+    #plt.figure()
+    #gs = gridspec.GridSpec()
+
+    #ax_map = plt.subplot(gs[:, 1])
+    #ax_obj = plt.subplot(gs[0, 1])
+    #ax_hist = plt.subplot(gs[1, 1])
+
+    # Map plot
+    latitudes = [client['latitude'] for client in clients]
+    longitudes = [client['longitude'] for client in clients]
+    ax_map.scatter(longitudes, latitudes, c='blue', label='Clients')
+
+    # Extract selected ODCs
+    selected_odcs = [initial_odcs[i] for i in range(len(initial_odcs)) if res.X[trial, i] > 0.5]
+    odc_latitudes = [odc[0] for odc in selected_odcs]
+    odc_longitudes = [odc[1] for odc in selected_odcs]
+    ax_map.scatter(odc_longitudes, odc_latitudes, c='red', marker='x', label='Selected ODCs')
+
+    #ax_map.set_title('ODC Placement Map')
+    ax_map.set_xlabel('Longitude')
+    ax_map.set_ylabel('Latitude')
+    ax_map.legend()
+
+    # Add error handling for basemap
+    try:
+        ctx.add_basemap(ax_map, crs='EPSG:4326', source=ctx.providers.CartoDB.Positron)
+        #ctx.add_basemap(ax_map, source=ctx.providers.OpenStreetMap.Mapnik)
+
+    except Exception as e:
+        print(f"Error adding basemap: {e}")
+        ax_map.set_facecolor('lightgray')  # Set a light gray background as a fallback
+
+    """    
+     #Objective values plot
+    f1 = res.F[:, 0]
+    f2 = res.F[:, 1]
+    f3 = res.F[:, 2]
+    
+    ax_obj.plot(f1, label='Normalized Capacity')
+    ax_obj.plot(f2, label='Normalized Number of ODCs')
+    ax_obj.plot(f3, label='Normalized Avg Distance')
+    ax_obj.set_title('Objective Values')
+    ax_obj.legend()
+
+    # Convergence history plot
+    n_evals = np.arange(1, len(res.history) + 1)
+    opt = [e.opt[0].F for e in res.history]
+    ax_hist.plot(n_evals, opt)
+    ax_hist.set_title('Convergence History')
+    ax_hist.set_xlabel('Generation')
+    ax_hist.set_ylabel('Objective Function Value')
+    """
+    plt.tight_layout()
+    output_file = os.path.join(output_directory, f'odc_placement_results_trial_{trial}.png')
+    plt.savefig(output_file, dpi=300)  # Save the figure as PNG
+    plt.close()
 def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs):
     capacities = {odc: 0 for odc in selected_odcs}
     fiberlength = {odc: 0 for odc in selected_odcs}
@@ -365,6 +424,7 @@ class BestSolutionTracker:
     def __init__(self, obj_weights):
         self.best_solutions = []
         self.obj_weights = obj_weights
+        self.best_idx = 0
 
     def update(self, algorithm):
         try:
@@ -375,8 +435,9 @@ class BestSolutionTracker:
                 algorithm.pop.get("F")[:, 2] * self.obj_weights[2]
             )
             # Find the index of the best solution based on the composite score
-            best_idx = np.argmin(composite_scores)
-            best_solution = algorithm.pop.get("X")[best_idx]
+            self.best_idx = np.argmin(composite_scores)
+            #print("best_idx",best_idx)
+            best_solution = algorithm.pop.get("X")[self.best_idx]
             self.best_solutions.append(best_solution)
         except Exception as e:
             print(f"Error in BestSolutionTracker: {e}")
@@ -443,7 +504,7 @@ def main():
     #obj_weights = [0, 1, 0]  # 40% to maximize no. of CPUs per ODC, 40% for minimizing the no. of ODCs, 20% for minimizing the O-RU <-> ODC distance
     
     ## Read and preprocess datasets
-    clients = read_clients('Natal.csv', cpu_per_100mhz) # create dataset
+    clients = read_clients('CityData/Manaus.csv', cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
     initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
@@ -460,8 +521,16 @@ def main():
 
     def custom_callback(algorithm):
         best_solution_tracker.update(algorithm)
-        
-    res = minimize(problem, algorithm, termination=('n_gen', num_trials), seed=seed, verbose=True, callback=custom_callback)
+    
+    termination = DefaultSingleObjectiveTermination(
+    xtol=1e-8,  # The algorithm stops if the change in decision variables is less than "xtol" for a period of "period" generations
+    cvtol=1e-8,  # The algortihm stops if the change in constraints violations is less than "cvtol" for a period of "period" generations
+    ftol=1e-8,  # The algortihm stops if the change in objective functions values is less than "ftol" for a period of "period" generations
+    period=60,  # Set the number os generations to evaluate xtol, cvtol and ftol
+    n_max_gen=num_trials  # Set the maximum number of generations the algorithm will run
+    )
+
+    res = minimize(problem, algorithm, termination=termination, seed=seed, verbose=True, callback=custom_callback)
 
     best_solutions_per_generation = best_solution_tracker.best_solutions
     
@@ -484,6 +553,11 @@ def main():
                 if frame is not None:  # Skip if no frame is generated
                     frames.append(frame)
                 pbar.update(1)
+    
+    #for trial in range(len(res.X)):
+    print(len(res.X))
+    plot_results(res, initial_odcs, clients, best_solution_tracker.best_idx, outputDir)
+    
 
     # Plot the final solution (best of the last generation)
     best_solution = best_solutions_per_generation[-1]
