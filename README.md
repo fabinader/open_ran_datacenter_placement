@@ -19,7 +19,7 @@ After creating, make sure odc_placement_parser.py reads the created dataset.
 ```
 $ chmod +x campaign.sh
 
-$ ./campaign.sh -j 5 -c 14 -d 11 -C 1000 -o 1 -n "CampaignName" -w 0.4,0.4,0.2
+$ ./campaign.sh -j 5 -c 14 -d 11 -C 1000 -o 1 -n "CampaignName" -w 0.4,0.4,0.2 -y Natal
 
 ```
 

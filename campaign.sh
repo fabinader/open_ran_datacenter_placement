@@ -2,7 +2,7 @@
 
 # Usage message
 usage() {
-  echo "Usage: $0 -j num_jobs -c cpus -d distance -C capacity -o odc -n campaign_name -w wcpu,wodc,wd"
+  echo "Usage: $0 -j num_jobs -c cpus -d distance -C capacity -o odc -n campaign_name -w wcpu,wodc,wd -y city"
   exit 1
 }
 
@@ -16,9 +16,10 @@ campaign_name=""
 wcpu=0
 wodc=0
 wd=0
+city=""
 
 # Parse command line arguments
-while getopts ":j:c:d:C:o:n:w:" opt; do
+while getopts ":j:c:d:C:o:n:w:y:" opt; do
   case ${opt} in
     j)
       num_jobs=$OPTARG
@@ -41,6 +42,9 @@ while getopts ":j:c:d:C:o:n:w:" opt; do
     w)
       IFS=',' read -r wcpu wodc wd <<< "$OPTARG"
       ;;
+    y)
+      city=$OPTARG
+      ;;
     \?)
       usage
       ;;
@@ -48,7 +52,7 @@ while getopts ":j:c:d:C:o:n:w:" opt; do
 done
 
 # Check if all required parameters are provided
-if [ $num_jobs -eq 0 ] || [ $cpus -eq 0 ] || [ $distance -eq 0 ] || [ $capacity -eq 0 ] || [ $odc -eq -1 ] || [ -z "$campaign_name" ] || [ -z "$wcpu" ] || [ -z "$wodc" ] || [ -z "$wd" ]; then
+if [ $num_jobs -eq 0 ] || [ $cpus -eq 0 ] || [ $distance -eq 0 ] || [ $capacity -eq 0 ] || [ $odc -eq -1 ] || [ -z "$campaign_name" ] || [ -z "$wcpu" ] || [ -z "$wodc" ] || [ -z "$wd" ]|| [ -z "$city" ]; then
   usage
 fi
 
@@ -66,5 +70,5 @@ do
   job_dir="${data_dir}/Job${i}"
   output_file="${data_dir}/Sim_${i}.out"
   mkdir -p "${job_dir}"
-  python3 odc_placement_parser.py -c=${cpus} -d=${distance} -cp=${capacity} -t=60 -pop=300 -p=8 -o=${odc} -wcpu=${wcpu} -wodc=${wodc} -wd=${wd} -s=$i -opd="${job_dir}" > "${output_file}" 2>&1
+  python3 odc_placement_parser.py -c=${cpus} -d=${distance} -cp=${capacity} -t=60 -pop=300 -p=8 -o=${odc} -wcpu=${wcpu} -wodc=${wodc} -wd=${wd} -s=$i -opd="${job_dir}" -cy=${city}> "${output_file}" 2>&1
 done

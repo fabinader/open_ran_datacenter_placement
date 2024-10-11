@@ -29,7 +29,6 @@ import re
 import warnings
 
 
-
 # Set locale to ensure dot-separated decimal representation
 locale.setlocale(locale.LC_NUMERIC, 'C')
 
@@ -52,13 +51,13 @@ def extract_bandwidth(designation):
         'M': 1,       # Megahertz to Megahertz
         'G': 1e3      # Gigahertz to Megahertz
     }
-    
+
     for i, char in enumerate(designation):
         if char in unit_dict:
             numeric_part = designation[:i]
             unit = char
             break
-    
+
     bandwidth_mhz = float(numeric_part) * unit_dict[unit]
     return bandwidth_mhz
 
@@ -72,6 +71,7 @@ def read_clients(file_path, cpu_per_100mhz):
         'latitude': locale.atof,
         'longitude': locale.atof
     })
+
     clients = []
     for index, row in df.iterrows():
         bandwidth_mhz = extract_bandwidth(row['emission_designation'])
@@ -105,16 +105,18 @@ def generate_initial_odcs(clients, num_initial_odcs):
     distinct_clusters = 0
     n_clusters = 0
     lat_lon = np.array([[c["latitude"], c["longitude"]] for c in clients])
+
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", ConvergenceWarning)
         kmeans = KMeans(n_clusters=num_initial_odcs, random_state=0).fit(lat_lon)
         initial_odcs = kmeans.cluster_centers_
+
         # Check if a ConvergenceWarning was raised
         if w and issubclass(w[-1].category, ConvergenceWarning):
             warning_message = str(w[-1].message)
             print("ConvergenceWarning was raised")
             print(warning_message)
-            
+
             # Extract numbers from the warning message using regex
             numbers = re.findall(r'\d+', warning_message)
             if len(numbers) >= 2:
@@ -124,8 +126,6 @@ def generate_initial_odcs(clients, num_initial_odcs):
                 print(f"n_clusters: {n_clusters}")
                 kmeans = KMeans(n_clusters=distinct_clusters, random_state=0).fit(lat_lon)
                 initial_odcs = kmeans.cluster_centers_
-                
-                
             else:
                 print("Could not extract the required numbers from the warning message.")
         else:
@@ -163,6 +163,7 @@ def evaluate_trial(i, X, clients, initial_odcs, max_distance, max_capacity, dist
 
     return (constraint0, constraint1, total_capacity, num_active_odc, avg_distance)
 
+
 class ODCPlacementProblem(Problem):
     def __init__(self, clients, initial_odcs, max_distance, max_capacity, cpu_per_100mhz, no_processes, distances, obj_weights):
         self.clients = clients
@@ -181,7 +182,6 @@ class ODCPlacementProblem(Problem):
             xu=1
         )
 
-    
     def _evaluate(self, X, out, *args, **kwargs):
         n_trials = X.shape[0]
         num_clients = len(self.clients)
@@ -218,6 +218,7 @@ class ODCPlacementProblem(Problem):
 
         out["F"] = np.column_stack([weighted_total_capacity, weighted_num_active_odcs, weighted_avg_distances])
         out["G"] = constraints
+
 
 # Plotting function with map and CDFs
 def plot_solution(clients, best_odcs, client_associations, capacities, max_distance, max_capacity, gen, num_trials):
@@ -303,7 +304,6 @@ def plot_solution(clients, best_odcs, client_associations, capacities, max_dista
 
     fig.tight_layout()
     return fig
-
 
 def plot_results(res, initial_odcs, clients, trial, output_directory):
     plt.figure(figsize=(12, 8))
@@ -418,6 +418,7 @@ def plot_results2(res, initial_odcs, clients, trial,output_directory):
     output_file = os.path.join(output_directory, f'odc_placement_results_trial_{trial}.png')
     plt.savefig(output_file, dpi=300)  # Save the figure as PNG
     plt.close()
+
 def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs):
     capacities = {odc: 0 for odc in selected_odcs}
     fiberlength = {odc: 0 for odc in selected_odcs}
@@ -476,6 +477,7 @@ def precompute_distances(clients, initial_odcs):
         )
     return distances
 
+
 class BestSolutionTracker:
     def __init__(self, obj_weights):
         self.best_solutions = []
@@ -498,9 +500,8 @@ class BestSolutionTracker:
         except Exception as e:
             print(f"Error in BestSolutionTracker: {e}")
 
+
 def main():
-    
-    
     parser = argparse.ArgumentParser()
     #problem parameters
     parser.add_argument("-c", "--cpuper100", type=str,default='16',help='cpus per 100MHz')
@@ -518,6 +519,7 @@ def main():
     #Sim parameters
     parser.add_argument("-s", "--seed", type=str, default='1',help='Random State Seed')
     parser.add_argument("-opd", "--outputDir", type=str, default='/home/ubuntu/',help='Full path where the results will be saved')
+    parser.add_argument("-cy", "--city", type=str, default='Manaus', help='Dataset city evaluated')
 
     args = parser.parse_args()
     cpu_per_100mhz=int(args.cpuper100)
@@ -530,6 +532,7 @@ def main():
     obj_weights = [float(args.wcpu), float(args.wodc), float(args.wd)]
     seed = int(args.seed)
     outputDir = args.outputDir
+    city = args.city
     
     print("#### Sim Parameters ####")
     print("## Problem Parameters ##")
@@ -545,6 +548,7 @@ def main():
     print("## Sim Parameters ##")
     print("     seed: ", seed)
     print("     outputDir: ", outputDir)
+    print("     city: ", city)
     print("########################")
     
     ## Set Parameters
@@ -560,7 +564,8 @@ def main():
     #obj_weights = [0, 1, 0]  # 40% to maximize no. of CPUs per ODC, 40% for minimizing the no. of ODCs, 20% for minimizing the O-RU <-> ODC distance
     
     ## Read and preprocess datasets
-    clients = read_clients('CityData/Natal.csv', cpu_per_100mhz) # create dataset
+    dataset_path = 'CityData/' + city + '.csv'
+    clients = read_clients(dataset_path, cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
     initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
@@ -589,9 +594,7 @@ def main():
     res = minimize(problem, algorithm, termination=termination, seed=seed, verbose=True, callback=custom_callback,save_history=True)
 
     best_solutions_per_generation = best_solution_tracker.best_solutions
-    
-  
-    
+
     if not best_solutions_per_generation:
         print("No best solutions were found during the optimization process.")
         return
@@ -611,7 +614,7 @@ def main():
                 if frame is not None:  # Skip if no frame is generated
                     frames.append(frame)
                 pbar.update(1)
-    
+
     #for trial in range(len(res.X)):
     #print(len(res.X))
     debug = 0
@@ -620,8 +623,7 @@ def main():
             plot_results(res, initial_odcs, clients, trial, outputDir)
     else:
         plot_results2(res, initial_odcs, clients, best_solution_tracker.best_idx, outputDir)
-    
-    
+
     #Convergence plot
     history = res.history
     generations = len(history)
@@ -648,11 +650,10 @@ def main():
         'generations': x_array,
         'avg_obj': avg_obj
     }
-    
+
     # Create a DataFrame
     dfConvergence = pd.DataFrame(data)
     dfConvergence.to_csv(outputDir+"/"+'dfConvergence.csv', index=False)
-    
 
     # Plot the final solution (best of the last generation)
     best_solution = best_solutions_per_generation[-1]
@@ -668,7 +669,6 @@ def main():
         }   
     selected_odcs = [odc for odc in selected_odcs if odc in active_odcs]
     client_associations = [(client_id, odc) for client_id, odc in client_associations if odc in active_odcs]
-    
 
     print("ODC Locations and Capacities:")
     for odc, values in active_odcs.items():
@@ -678,19 +678,17 @@ def main():
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time:.2f} seconds")
 
-
     #imageio.mimsave('optimization_process.gif', frames, fps=2)
-    
     #os.makedirs(outputDir+"/data", exist_ok=True)
-    
+
     df_client_association = pd.DataFrame(client_associations,columns=['oru','odc_location'])
     df_capacities = pd.DataFrame(capacities.items(),columns=['odc_locations','capacities'])
     df_fiberlength = pd.DataFrame(fiberlength.items(),columns=['odc_locations','fiberlength'])
-    
+
     df_client_association.to_csv(outputDir+"/"+"df_client_association"+".csv")
     df_capacities.to_csv(outputDir+"/"+"df_capacities"+".csv")
     df_fiberlength.to_csv(outputDir+"/"+"df_fiberlength"+".csv")
-    
+
     imageio.mimsave(outputDir+"/"+'optimization_process.gif', frames, fps=2)
 
 if __name__ == "__main__":
