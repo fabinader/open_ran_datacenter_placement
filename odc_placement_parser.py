@@ -520,7 +520,9 @@ def main():
     parser.add_argument("-wd", "--wd", type=str, default='1',help='Weight of ORU-ODC distance')    
     #Sim parameters
     parser.add_argument("-s", "--seed", type=str, default='1',help='Random State Seed')
+    parser.add_argument("-csv", "--csv", type=str, default='/home/ubuntu/',help='Full path where the processed .csvs are')
     parser.add_argument("-opd", "--outputDir", type=str, default='/home/ubuntu/',help='Full path where the results will be saved')
+    
 
     args = parser.parse_args()
     cpu_per_100mhz=int(args.cpuper100)
@@ -532,6 +534,7 @@ def main():
     no_processes = int(args.process)
     obj_weights = [float(args.wcpu), float(args.wodc), float(args.wd)]
     seed = int(args.seed)
+    dataset = args.csv
     outputDir = args.outputDir
     
     print("#### Sim Parameters ####")
@@ -546,6 +549,7 @@ def main():
     print("     no_processes: ", no_processes)
     print("     obj_weights: ", obj_weights)
     print("## Sim Parameters ##")
+    print("     dataset: ", dataset)
     print("     seed: ", seed)
     print("     outputDir: ", outputDir)
     print("########################")
@@ -563,7 +567,7 @@ def main():
     #obj_weights = [0, 1, 0]  # 40% to maximize no. of CPUs per ODC, 40% for minimizing the no. of ODCs, 20% for minimizing the O-RU <-> ODC distance
     
     ## Read and preprocess datasets
-    clients = read_clients('CityData/Manaus.csv', cpu_per_100mhz) # create dataset
+    clients = read_clients(dataset, cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
     initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 

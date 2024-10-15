@@ -1,11 +1,18 @@
 import pandas as pd
+import argparse
 
-filename = "Natal"
-# Read the CSV file into a DataFrame
-if filename == 'Manaus':
-    df = pd.read_csv('csv_manaus_licenciamento_nr.csv', encoding='latin-1')
-elif filename == 'Natal':
-    df = pd.read_csv('csv_natal_licenciamento_nr.csv', encoding='latin-1')
+# Set up argument parser
+parser = argparse.ArgumentParser(description="Process CSV files for licenciamento.")
+parser.add_argument('dataset', type=str, help="Dataset to read (e.g., 'Manaus.csv' or 'Natal.csv')")
+parser.add_argument('output', type=str, help="Output filename (without extension)")
+
+args = parser.parse_args()
+
+# Read the dataset based on the provided argument
+dataset = args.dataset
+#output = args.output
+
+df = pd.read_csv(dataset, encoding='latin-1')
 
 # Specify the columns to keep and rename them
 columns_to_keep = {
@@ -35,7 +42,6 @@ df.rename(columns=columns_to_keep, inplace=True)
 # Filter the DataFrame for the specific operator
 filtered_df = df[df['operator'] == 'TELEFONICA BRASIL S.A.']
 
-# Display the filtered DataFrame
-#print(filtered_df)
-
-filtered_df.to_csv(filename+'.csv', index=False)
+# Write the filtered DataFrame to the specified output file
+output_filename = args.output
+filtered_df.to_csv(output_filename + '.csv', index=False)
