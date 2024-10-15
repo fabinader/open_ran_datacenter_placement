@@ -375,7 +375,10 @@ def plot_results2(res, initial_odcs, clients, trial,output_directory):
     ax_map.scatter(longitudes, latitudes, c='blue', label='Clients')
 
     # Extract selected ODCs
-    selected_odcs = [initial_odcs[i] for i in range(len(initial_odcs)) if res.X[trial, i] > 0.5]
+    if res.X is None:
+        selected_odcs = initial_odcs
+    else:
+        selected_odcs = [initial_odcs[i] for i in range(len(initial_odcs)) if res.X[trial, i] > 0.5]
     odc_latitudes = [odc[0] for odc in selected_odcs]
     odc_longitudes = [odc[1] for odc in selected_odcs]
     ax_map.scatter(odc_longitudes, odc_latitudes, c='red', marker='x', label='Selected ODCs')
@@ -506,7 +509,7 @@ def main():
     parser.add_argument("-c", "--cpuper100", type=str,default='16',help='cpus per 100MHz')
     parser.add_argument("-d", "--maxdistance", type=str, default='3', help='Max distance')
     parser.add_argument("-cp", "--capacity", type=str,default='2560', help='Max capacity')
-    parser.add_argument("-o", "--odcs", type=str, default='0',help='No. of Initial ODCs')
+    parser.add_argument("-o", "--odcs", type=str, default='1',help='No. of Initial ODCs')
     #GA parameters
     parser.add_argument("-t", "--trials", type=str, default='60',help='no. of trials"')
     parser.add_argument("-pop", "--population", type=str, default='300',help='Population Size')
@@ -560,7 +563,7 @@ def main():
     #obj_weights = [0, 1, 0]  # 40% to maximize no. of CPUs per ODC, 40% for minimizing the no. of ODCs, 20% for minimizing the O-RU <-> ODC distance
     
     ## Read and preprocess datasets
-    clients = read_clients('CityData/Natal.csv', cpu_per_100mhz) # create dataset
+    clients = read_clients('CityData/Manaus.csv', cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
     initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
