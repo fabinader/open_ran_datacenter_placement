@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy import stats
 
 
 path = '/home/mbpaiva/Repositories/AUTORAN/Case3'
@@ -61,9 +62,15 @@ def plot_3d(df, label1, label2, z_label, title):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
+    count = len(df[label1]) - 1
+    for index,value in enumerate(df[label1]):
+        if value == 0:
+            count = index
+            break
+
     # Plotando as duas curvas
-    ax.plot(df['X'], df['Y'], df[label1], label=label1, marker='o')
-    ax.plot(df['X'], df['Y'], df[label2], label=label2, marker='^')
+    ax.plot(df['X'][0:count], df['Y'][0:count], df[label1][0:count], label=label1, marker='o')
+    ax.plot(df['X'][0:count], df['Y'][0:count], df[label2][0:count], label=label2, marker='^')
 
     # Configurando rótulos e título
     ax.set_xlabel('w1')
@@ -73,6 +80,56 @@ def plot_3d(df, label1, label2, z_label, title):
     ax.legend()
 
     # Exibindo o gráfico
+    plt.show()
+
+def is_dominated(p, q):
+    """Verifica se a solução p é dominada pela solução q."""
+    return all(p >= q) and any(p > q)
+
+def pareto_frontier(data):
+    """
+    Identifica a frente de Pareto em um conjunto de soluções.
+    Cada linha em data deve ser uma solução com múltiplos objetivos.
+    """
+    pareto_points = []
+    for i, p in enumerate(data):
+        dominated = False
+        for j, q in enumerate(data):
+            if i != j and is_dominated(p, q):
+                dominated = True
+                break
+        if not dominated:
+            pareto_points.append(p)
+    return np.array(pareto_points)
+
+def bar_grafics(data, labels_solucoes, labels_objetivos):
+    num_solucoes, num_objetivos = data.shape
+
+    # Configurando o gráfico de barras agrupadas
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plotando as barras para cada solução
+    bar_width = 0.25
+    index = np.arange(data.shape[0])
+
+    # Plotando cada conjunto de barras
+    for i in range(data.shape[1]):
+        ax.bar(index + i * bar_width, data[:, i], bar_width, label=labels_objetivos[i])
+
+    # Adicionando os valores acima das barras
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            ax.text(index[i] + j * bar_width, data[i, j] + 10, f'{data[i, j]:.2f}', ha='center')
+
+    # Ajustando o gráfico
+    ax.set_xlabel('Soluções')
+    ax.set_ylabel('Valores dos Objetivos')
+    ax.set_title('Gráfico de Barras das Soluções')
+    ax.set_xticks(index + bar_width)
+    ax.set_xticklabels(labels_solucoes, rotation=45)
+    ax.legend(title='Objetivos')
+
+    plt.tight_layout()
     plt.show()
 
 def main():
@@ -186,10 +243,33 @@ def main():
     dfCapacityPerODC = pd.DataFrame(data_CapacityPerODC)
     dfFiberLength = pd.DataFrame(data_FiberLength)
 
-    plot_3d(dfNoODCs, 'NoODCs-Manaus', 'NoODCs-Natal', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0, ODC = O-RUs')
-    plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus', 'TotalCapacity-Natal', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0, ODC = O-RUs')
-    plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus', 'CapacityPerODC-Natal', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0, ODC = O-RUs')
-    plot_3d(dfFiberLength, 'FiberLength-Manaus', 'FiberLength-Natal', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0, ODC = O-RUs')
+    # plot_3d(dfNoODCs, 'NoODCs-Manaus', 'NoODCs-Natal', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0, ODC = O-RUs')
+    # plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus', 'TotalCapacity-Natal', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0, ODC = O-RUs')
+    # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus', 'CapacityPerODC-Natal', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0, ODC = O-RUs')
+    # plot_3d(dfFiberLength, 'FiberLength-Manaus', 'FiberLength-Natal', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0, ODC = O-RUs')
+
+    General_Results_Manaus = np.array([data_TotalCapacity['TotalCapacity-Manaus'], data_NoODCs['NoODCs-Manaus'], data_FiberLength['FiberLength-Manaus']]).T
+    # pareto_front_Manaus = pareto_frontier(General_Results_Manaus)
+    # print("CASO 3 - Frente de Pareto (Manaus):\n", pareto_front_Manaus)
+    # print('Resultados CASO 3 - Manaus\n', General_Results_Manaus)
+
+    General_Results_Natal = np.array([data_TotalCapacity['TotalCapacity-Natal'], data_NoODCs['NoODCs-Natal'], data_FiberLength['FiberLength-Natal']]).T
+    # pareto_front_Natal = pareto_frontier(General_Results_Natal)
+    # print("CASO 3 - Frente de Pareto (Natal):\n", pareto_front_Natal)
+    # print('Resultados CASO 3 - Natal\n', General_Results_Natal)
+
+    labels_objectives = ['Tot. Capacity', 'No. ODCs', 'Fiber Len.']
+    labels_sol = weights
+
+    # data_min = General_Results_Manaus.min(axis=0)
+    # data_max = General_Results_Manaus.max(axis=0)
+    # General_Results_Manaus = (General_Results_Manaus - data_min) / (data_max - data_min)
+    # data_min = General_Results_Natal.min(axis=0)
+    # data_max = General_Results_Natal.max(axis=0)
+    # General_Results_Natal = (General_Results_Natal - data_min) / (data_max - data_min)
+
+    bar_grafics(General_Results_Manaus, labels_sol, labels_objectives)
+    bar_grafics(General_Results_Natal, labels_sol, labels_objectives)
 
     # CASE 4 =======================================================================    
     num_jobs = 100
@@ -407,27 +487,50 @@ def main():
     dfCapacityPerODC = pd.DataFrame(data_CapacityPerODC)
     dfFiberLength = pd.DataFrame(data_FiberLength)
 
-    plot_3d(dfNoODCs, 'NoODCs-Manaus01', 'NoODCs-Natal01', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.1, ODC = O-RUs')
-    plot_3d(dfNoODCs, 'NoODCs-Manaus03', 'NoODCs-Natal03', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.3, ODC = O-RUs')
-    plot_3d(dfNoODCs, 'NoODCs-Manaus05', 'NoODCs-Natal05', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.5, ODC = O-RUs')
-    plot_3d(dfNoODCs, 'NoODCs-Manaus07', 'NoODCs-Natal07', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.7, ODC = O-RUs')
-    plot_3d(dfNoODCs, 'NoODCs-Manaus08', 'NoODCs-Natal08', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.8, ODC = O-RUs')
-    plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus01', 'TotalCapacity-Natal01', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.1, ODC = O-RUs')
-    plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus03', 'TotalCapacity-Natal03', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.3, ODC = O-RUs')
-    plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus05', 'TotalCapacity-Natal05', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.5, ODC = O-RUs')
-    plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus07', 'TotalCapacity-Natal07', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.7, ODC = O-RUs')
-    plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus08', 'TotalCapacity-Natal08', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.8, ODC = O-RUs')
-    plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus01', 'CapacityPerODC-Natal01', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.1, ODC = O-RUs')
-    plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus03', 'CapacityPerODC-Natal03', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.3, ODC = O-RUs')
-    plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus05', 'CapacityPerODC-Natal05', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.5, ODC = O-RUs')
-    plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus07', 'CapacityPerODC-Natal07', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.7, ODC = O-RUs')
-    plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus08', 'CapacityPerODC-Natal08', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.8, ODC = O-RUs')
-    plot_3d(dfFiberLength, 'FiberLength-Manaus01', 'FiberLength-Natal01', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.1, ODC = O-RUs')
-    plot_3d(dfFiberLength, 'FiberLength-Manaus03', 'FiberLength-Natal03', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.3, ODC = O-RUs')
-    plot_3d(dfFiberLength, 'FiberLength-Manaus05', 'FiberLength-Natal05', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.5, ODC = O-RUs')
-    plot_3d(dfFiberLength, 'FiberLength-Manaus07', 'FiberLength-Natal07', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.7, ODC = O-RUs')
-    plot_3d(dfFiberLength, 'FiberLength-Manaus08', 'FiberLength-Natal08', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.8, ODC = O-RUs')
+    # plot_3d(dfNoODCs, 'NoODCs-Manaus01', 'NoODCs-Natal01', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.1, ODC = O-RUs')
+    # plot_3d(dfNoODCs, 'NoODCs-Manaus03', 'NoODCs-Natal03', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.3, ODC = O-RUs')
+    # plot_3d(dfNoODCs, 'NoODCs-Manaus05', 'NoODCs-Natal05', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.5, ODC = O-RUs')
+    # plot_3d(dfNoODCs, 'NoODCs-Manaus07', 'NoODCs-Natal07', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.7, ODC = O-RUs')
+    # plot_3d(dfNoODCs, 'NoODCs-Manaus08', 'NoODCs-Natal08', 'No. ODCs (ODCs)', 'Número Médio de ODCs - w0 = 0.8, ODC = O-RUs')
+    # plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus01', 'TotalCapacity-Natal01', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.1, ODC = O-RUs')
+    # plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus03', 'TotalCapacity-Natal03', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.3, ODC = O-RUs')
+    # plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus05', 'TotalCapacity-Natal05', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.5, ODC = O-RUs')
+    # plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus07', 'TotalCapacity-Natal07', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.7, ODC = O-RUs')
+    # plot_3d(dfTotalCapacity, 'TotalCapacity-Manaus08', 'TotalCapacity-Natal08', 'Total Capacity (CPUs)', 'Capacidade Total - w0 = 0.8, ODC = O-RUs')
+    # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus01', 'CapacityPerODC-Natal01', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.1, ODC = O-RUs')
+    # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus03', 'CapacityPerODC-Natal03', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.3, ODC = O-RUs')
+    # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus05', 'CapacityPerODC-Natal05', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.5, ODC = O-RUs')
+    # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus07', 'CapacityPerODC-Natal07', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.7, ODC = O-RUs')
+    # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus08', 'CapacityPerODC-Natal08', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0.8, ODC = O-RUs')
+    # plot_3d(dfFiberLength, 'FiberLength-Manaus01', 'FiberLength-Natal01', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.1, ODC = O-RUs')
+    # plot_3d(dfFiberLength, 'FiberLength-Manaus03', 'FiberLength-Natal03', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.3, ODC = O-RUs')
+    # plot_3d(dfFiberLength, 'FiberLength-Manaus05', 'FiberLength-Natal05', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.5, ODC = O-RUs')
+    # plot_3d(dfFiberLength, 'FiberLength-Manaus07', 'FiberLength-Natal07', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.7, ODC = O-RUs')
+    # plot_3d(dfFiberLength, 'FiberLength-Manaus08', 'FiberLength-Natal08', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0.8, ODC = O-RUs')
 
+    data_TotalCapacity_Manaus = np.concatenate((data_TotalCapacity['TotalCapacity-Manaus01'], data_TotalCapacity['TotalCapacity-Manaus03'], data_TotalCapacity['TotalCapacity-Manaus05'], data_TotalCapacity['TotalCapacity-Manaus07'], data_TotalCapacity['TotalCapacity-Manaus08']))
+    data_NoODCs_Manaus = np.concatenate((data_NoODCs['NoODCs-Manaus01'], data_NoODCs['NoODCs-Manaus03'], data_NoODCs['NoODCs-Manaus05'], data_NoODCs['NoODCs-Manaus07'], data_NoODCs['NoODCs-Manaus08']))
+    data_FiberLength_Manaus = np.concatenate((data_FiberLength['FiberLength-Manaus01'], data_FiberLength['FiberLength-Manaus03'], data_FiberLength['FiberLength-Manaus05'], data_FiberLength['FiberLength-Manaus07'], data_FiberLength['FiberLength-Manaus08']))
+
+    data_TotalCapacity_Natal = np.concatenate((data_TotalCapacity['TotalCapacity-Natal01'], data_TotalCapacity['TotalCapacity-Natal03'], data_TotalCapacity['TotalCapacity-Natal05'], data_TotalCapacity['TotalCapacity-Natal07'], data_TotalCapacity['TotalCapacity-Natal08']))
+    data_NoODCs_Nata = np.concatenate((data_NoODCs['NoODCs-Natal01'], data_NoODCs['NoODCs-Natal03'], data_NoODCs['NoODCs-Natal05'], data_NoODCs['NoODCs-Natal07'], data_NoODCs['NoODCs-Natal08']))
+    data_FiberLength_Natal = np.concatenate((data_FiberLength['FiberLength-Natal01'], data_FiberLength['FiberLength-Natal03'], data_FiberLength['FiberLength-Natal05'], data_FiberLength['FiberLength-Natal07'], data_FiberLength['FiberLength-Natal08']))
+
+    General_Results_Manaus = np.array([data_TotalCapacity_Manaus, data_NoODCs_Manaus, data_FiberLength_Manaus]).T
+    General_Results_Manaus = General_Results_Manaus[~np.all(General_Results_Manaus == 0, axis=1)]
+    # pareto_front_Manaus = pareto_frontier(General_Results_Manaus)
+    # print("CASO 3 - Frente de Pareto (Manaus):\n", pareto_front_Manaus)
+    # print('Resultados CASO 4 - Manaus\n', General_Results_Manaus)
+
+    General_Results_Natal = np.array([data_TotalCapacity_Natal, data_NoODCs_Nata, data_FiberLength_Natal]).T
+    General_Results_Natal = General_Results_Natal[~np.all(General_Results_Natal == 0, axis=1)]
+    # pareto_front_Natal = pareto_frontier(General_Results_Natal)
+    # print("CASO 3 - Frente de Pareto (Natal):\n", pareto_front_Natal)
+    # print('Resultados CASO 4 - Natal\n', General_Results_Natal)
+
+    labels_sol = weights
+    bar_grafics(General_Results_Manaus, labels_sol, labels_objectives)
+    bar_grafics(General_Results_Natal, labels_sol, labels_objectives)
 
 if __name__ == '__main__':
     main()
