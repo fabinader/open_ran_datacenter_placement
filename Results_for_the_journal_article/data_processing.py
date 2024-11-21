@@ -132,6 +132,59 @@ def bar_grafics(data, labels_solucoes, labels_objetivos):
     plt.tight_layout()
     plt.show()
 
+def graf(data, title):
+    cases = data[:, 2]  # Casos simulados (coluna 2)
+    x_values = data[:, 0].astype(float)  # No. ODCs (coluna 0)
+    y_values = data[:, 1].astype(float)  # Grandeza Y (coluna 1)
+
+    # Criando o gráfico
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plot da grandeza Y (eixo esquerdo)
+    ax1.plot(cases, y_values, 'b-o', label='Fiber Length (km)')
+    ax1.set_xlabel('Casos Simulados', fontsize=12)
+    ax1.set_ylabel('Fiber Length (km)', color='b', fontsize=12)
+    ax1.tick_params(axis='y', labelcolor='b')
+    ax1.tick_params(axis='x', rotation=45)  # Rotaciona os labels do eixo X
+
+    # Criando o segundo eixo y para a grandeza X
+    ax2 = ax1.twinx()
+    ax2.plot(cases, x_values, 'r-s', label='No. ODCs')
+    ax2.set_ylabel('No. ODCs', color='r', fontsize=12)
+    ax2.tick_params(axis='y', labelcolor='r')
+
+    # Adicionando título
+    plt.title(title, fontsize=14)
+
+    # Ajustando o layout
+    fig.tight_layout()
+    plt.show()
+
+def plot_pareto(matriz, title):
+    x = matriz[:, 0].astype(float)  # Primeira coluna (coordenadas x)
+    y = matriz[:, 1].astype(float)  # Segunda coluna (coordenadas y)
+    labels = matriz[:, 2]           # Terceira coluna (labels)
+
+    # Criando o gráfico
+    plt.figure(figsize=(12, 8))
+    plt.scatter(x, y, c='blue', label='Pontos')  # Scatter plot
+
+    # Adicionando as labels nos pontos
+    for i, label in enumerate(labels):
+        if i % 2 == 0:
+            plt.text(x[i], y[i], label, fontsize=10, ha='right', va='bottom')
+        else:
+            plt.text(x[i], y[i], label, fontsize=10, ha='left', va='bottom')
+
+    # Configurações do gráfico
+    plt.title("Pareto Front - " + title, fontsize=16)
+    plt.xlabel("No. ODCs", fontsize=12)
+    plt.ylabel("Fiber Len.", fontsize=12)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
 def main():
     # CASE 3 =======================================================================
     listOdcsManaus = []
@@ -248,18 +301,26 @@ def main():
     # plot_3d(dfCapacityPerODC, 'CapacityPerODC-Manaus', 'CapacityPerODC-Natal', 'Capacity (CPUs/ODCs)', 'Capacidade por ODCs - w0 = 0, ODC = O-RUs')
     # plot_3d(dfFiberLength, 'FiberLength-Manaus', 'FiberLength-Natal', 'Fiber Length (km)', 'Comprimento Total de Fibra Óptica Médio - w0 = 0, ODC = O-RUs')
 
-    General_Results_Manaus = np.array([data_TotalCapacity['TotalCapacity-Manaus'], data_NoODCs['NoODCs-Manaus'], data_FiberLength['FiberLength-Manaus']]).T
-    # pareto_front_Manaus = pareto_frontier(General_Results_Manaus)
-    # print("CASO 3 - Frente de Pareto (Manaus):\n", pareto_front_Manaus)
-    # print('Resultados CASO 3 - Manaus\n', General_Results_Manaus)
+    # General_Results_Manaus = np.array([data_TotalCapacity['TotalCapacity-Manaus'], data_NoODCs['NoODCs-Manaus'], data_FiberLength['FiberLength-Manaus']]).T
+    General_Results_Manaus = np.array([data_NoODCs['NoODCs-Manaus'], data_FiberLength['FiberLength-Manaus']]).T
 
-    General_Results_Natal = np.array([data_TotalCapacity['TotalCapacity-Natal'], data_NoODCs['NoODCs-Natal'], data_FiberLength['FiberLength-Natal']]).T
-    # pareto_front_Natal = pareto_frontier(General_Results_Natal)
-    # print("CASO 3 - Frente de Pareto (Natal):\n", pareto_front_Natal)
-    # print('Resultados CASO 3 - Natal\n', General_Results_Natal)
+    # General_Results_Natal = np.array([data_TotalCapacity['TotalCapacity-Natal'], data_NoODCs['NoODCs-Natal'], data_FiberLength['FiberLength-Natal']]).T
+    General_Results_Natal = np.array([data_NoODCs['NoODCs-Natal'], data_FiberLength['FiberLength-Natal']]).T
 
-    labels_objectives = ['Tot. Capacity', 'No. ODCs', 'Fiber Len.']
     labels_sol = weights
+    labels = np.array([labels_sol]).T
+
+    General_Results_Manaus = np.hstack((General_Results_Manaus, labels))
+    General_Results_Natal = np.hstack((General_Results_Natal, labels))
+
+    plot_pareto(General_Results_Manaus, 'Total Capacity = 3960 CPUs')
+    plot_pareto(General_Results_Natal, 'Total Capacity = 2315 CPUs')
+
+    # print(General_Results_Manaus)
+    # print(labels)
+
+    graf(General_Results_Manaus, 'Caso 3 - Manaus - Total Capacity = 3960 CPUs')
+    graf(General_Results_Natal, 'Caso 3 - Natal - Total Capacity = 2315 CPUs')
 
     # data_min = General_Results_Manaus.min(axis=0)
     # data_max = General_Results_Manaus.max(axis=0)
@@ -268,8 +329,8 @@ def main():
     # data_max = General_Results_Natal.max(axis=0)
     # General_Results_Natal = (General_Results_Natal - data_min) / (data_max - data_min)
 
-    bar_grafics(General_Results_Manaus, labels_sol, labels_objectives)
-    bar_grafics(General_Results_Natal, labels_sol, labels_objectives)
+    # bar_grafics(General_Results_Manaus, labels_sol, labels_objectives)
+    # bar_grafics(General_Results_Natal, labels_sol, labels_objectives)
 
     # CASE 4 =======================================================================    
     num_jobs = 100
@@ -513,24 +574,26 @@ def main():
     data_FiberLength_Manaus = np.concatenate((data_FiberLength['FiberLength-Manaus01'], data_FiberLength['FiberLength-Manaus03'], data_FiberLength['FiberLength-Manaus05'], data_FiberLength['FiberLength-Manaus07'], data_FiberLength['FiberLength-Manaus08']))
 
     data_TotalCapacity_Natal = np.concatenate((data_TotalCapacity['TotalCapacity-Natal01'], data_TotalCapacity['TotalCapacity-Natal03'], data_TotalCapacity['TotalCapacity-Natal05'], data_TotalCapacity['TotalCapacity-Natal07'], data_TotalCapacity['TotalCapacity-Natal08']))
-    data_NoODCs_Nata = np.concatenate((data_NoODCs['NoODCs-Natal01'], data_NoODCs['NoODCs-Natal03'], data_NoODCs['NoODCs-Natal05'], data_NoODCs['NoODCs-Natal07'], data_NoODCs['NoODCs-Natal08']))
+    data_NoODCs_Natal = np.concatenate((data_NoODCs['NoODCs-Natal01'], data_NoODCs['NoODCs-Natal03'], data_NoODCs['NoODCs-Natal05'], data_NoODCs['NoODCs-Natal07'], data_NoODCs['NoODCs-Natal08']))
     data_FiberLength_Natal = np.concatenate((data_FiberLength['FiberLength-Natal01'], data_FiberLength['FiberLength-Natal03'], data_FiberLength['FiberLength-Natal05'], data_FiberLength['FiberLength-Natal07'], data_FiberLength['FiberLength-Natal08']))
 
-    General_Results_Manaus = np.array([data_TotalCapacity_Manaus, data_NoODCs_Manaus, data_FiberLength_Manaus]).T
+    General_Results_Manaus = np.array([data_NoODCs_Manaus, data_FiberLength_Manaus]).T
     General_Results_Manaus = General_Results_Manaus[~np.all(General_Results_Manaus == 0, axis=1)]
-    # pareto_front_Manaus = pareto_frontier(General_Results_Manaus)
-    # print("CASO 3 - Frente de Pareto (Manaus):\n", pareto_front_Manaus)
-    # print('Resultados CASO 4 - Manaus\n', General_Results_Manaus)
 
-    General_Results_Natal = np.array([data_TotalCapacity_Natal, data_NoODCs_Nata, data_FiberLength_Natal]).T
+    General_Results_Natal = np.array([data_NoODCs_Natal, data_FiberLength_Natal]).T
     General_Results_Natal = General_Results_Natal[~np.all(General_Results_Natal == 0, axis=1)]
-    # pareto_front_Natal = pareto_frontier(General_Results_Natal)
-    # print("CASO 3 - Frente de Pareto (Natal):\n", pareto_front_Natal)
-    # print('Resultados CASO 4 - Natal\n', General_Results_Natal)
 
     labels_sol = weights
-    bar_grafics(General_Results_Manaus, labels_sol, labels_objectives)
-    bar_grafics(General_Results_Natal, labels_sol, labels_objectives)
+    labels = np.array([labels_sol]).T
+
+    General_Results_Manaus = np.hstack((General_Results_Manaus, labels))
+    General_Results_Natal = np.hstack((General_Results_Natal, labels))
+
+    plot_pareto(General_Results_Manaus, 'Total Capacity = 3960 CPUs')
+    plot_pareto(General_Results_Natal, 'Total Capacity = 2315 CPUs')
+
+    graf(General_Results_Manaus, 'Caso 4 - Manaus - Total Capacity = 3960 CPUs')
+    graf(General_Results_Natal, 'Caso 4 - Natal - Total Capacity = 2315 CPUs')
 
 if __name__ == '__main__':
     main()
