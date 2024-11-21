@@ -1,176 +1,0 @@
-#### Sim Parameters ####
-## Problem Parameters ##
-     cpu_per_100mhz:  14
-     max_distance:  11
-     max_capacity:  1000
-     num_initial_odcs (if 0 means ODCs = RUs):  0
-## NSGAII Parameters ##
-     num_trials:  60
-     population_size:  300
-     no_processes:  8
-     obj_weights:  [0.5, 0.0, 0.5]
-## Sim Parameters ##
-     seed:  3
-     outputDir:  /home/ubuntu/EmbrapiiCPqD/OpenRanDatacenterPlacement/open_ran_datacenter_placement/Campaign_Case2_1-1/data/Job3
-########################
-ConvergenceWarning was raised
-Number of distinct clusters (90) found smaller than n_clusters (288). Possibly due to duplicate points in X.
-Number of distinct clusters: 90
-n_clusters: 288
-==========================================================================================
-n_gen  |  n_eval  | n_nds  |     cv_min    |     cv_avg    |      eps      |   indicator  
-==========================================================================================
-     1 |      300 |      1 |  0.000000E+00 |  0.000000E+00 |             - |             -
-     2 |      600 |      1 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-     3 |      900 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0145978039 |         ideal
-     4 |     1200 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0111126560 |         ideal
-     5 |     1500 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0110955464 |         ideal
-     6 |     1800 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0057183171 |         ideal
-     7 |     2100 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0090541264 |         ideal
-     8 |     2400 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0060008344 |         ideal
-     9 |     2700 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0122375048 |         ideal
-    10 |     3000 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0052604674 |         ideal
-    11 |     3300 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0037863557 |         ideal
-    12 |     3600 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0104287011 |         ideal
-    13 |     3900 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0057234043 |         ideal
-    14 |     4200 |      1 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    15 |     4500 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0109825092 |         ideal
-    16 |     4800 |      2 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    17 |     5100 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0042043527 |         ideal
-    18 |     5400 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0072575812 |         ideal
-    19 |     5700 |      1 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    20 |     6000 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0005079057 |             f
-    21 |     6300 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0022816890 |             f
-    22 |     6600 |      1 |  0.000000E+00 |  0.000000E+00 |  0.0042690567 |         ideal
-    23 |     6900 |      6 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    24 |     7200 |     28 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    25 |     7500 |     88 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    26 |     7800 |    214 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    27 |     8100 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    28 |     8400 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    29 |     8700 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    30 |     9000 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    31 |     9300 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    32 |     9600 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    33 |     9900 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    34 |    10200 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    35 |    10500 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    36 |    10800 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    37 |    11100 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    38 |    11400 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    39 |    11700 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    40 |    12000 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    41 |    12300 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    42 |    12600 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    43 |    12900 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    44 |    13200 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    45 |    13500 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    46 |    13800 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    47 |    14100 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    48 |    14400 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    49 |    14700 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    50 |    15000 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    51 |    15300 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    52 |    15600 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    53 |    15900 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    54 |    16200 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    55 |    16500 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    56 |    16800 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    57 |    17100 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    58 |    17400 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    59 |    17700 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-    60 |    18000 |    300 |  0.000000E+00 |  0.000000E+00 |  0.000000E+00 |             f
-Total generations with best solutions: 60
-Generating GIF:   0%|          | 0/60 [00:00<?, ?it/s]Generating GIF:   2%|▏         | 1/60 [00:04<04:04,  4.14s/it]Generating GIF:   5%|▌         | 3/60 [00:04<01:05,  1.14s/it]Generating GIF:   8%|▊         | 5/60 [00:04<00:32,  1.67it/s]Generating GIF:  15%|█▌        | 9/60 [00:06<00:27,  1.83it/s]Generating GIF:  17%|█▋        | 10/60 [00:07<00:29,  1.72it/s]Generating GIF:  23%|██▎       | 14/60 [00:07<00:15,  2.93it/s]Generating GIF:  25%|██▌       | 15/60 [00:08<00:18,  2.41it/s]Generating GIF:  28%|██▊       | 17/60 [00:09<00:18,  2.38it/s]Generating GIF:  30%|███       | 18/60 [00:09<00:17,  2.34it/s]Generating GIF:  35%|███▌      | 21/60 [00:10<00:13,  2.92it/s]Generating GIF:  38%|███▊      | 23/60 [00:10<00:10,  3.51it/s]Generating GIF:  40%|████      | 24/60 [00:11<00:09,  3.74it/s]Generating GIF:  42%|████▏     | 25/60 [00:11<00:09,  3.76it/s]Generating GIF:  43%|████▎     | 26/60 [00:11<00:08,  4.20it/s]Generating GIF:  45%|████▌     | 27/60 [00:13<00:19,  1.71it/s]Generating GIF:  50%|█████     | 30/60 [00:13<00:12,  2.46it/s]Generating GIF:  53%|█████▎    | 32/60 [00:14<00:11,  2.44it/s]Generating GIF:  57%|█████▋    | 34/60 [00:15<00:10,  2.45it/s]Generating GIF:  58%|█████▊    | 35/60 [00:16<00:13,  1.80it/s]Generating GIF:  60%|██████    | 36/60 [00:17<00:14,  1.71it/s]Generating GIF:  62%|██████▏   | 37/60 [00:18<00:14,  1.56it/s]Generating GIF:  63%|██████▎   | 38/60 [00:18<00:12,  1.74it/s]Generating GIF:  67%|██████▋   | 40/60 [00:19<00:11,  1.68it/s]Generating GIF:  68%|██████▊   | 41/60 [00:20<00:11,  1.62it/s]Generating GIF:  73%|███████▎  | 44/60 [00:22<00:09,  1.62it/s]Generating GIF:  75%|███████▌  | 45/60 [00:22<00:09,  1.62it/s]Generating GIF:  77%|███████▋  | 46/60 [00:23<00:08,  1.56it/s]Generating GIF:  83%|████████▎ | 50/60 [00:24<00:03,  2.72it/s]Generating GIF:  85%|████████▌ | 51/60 [00:24<00:03,  2.40it/s]Generating GIF:  87%|████████▋ | 52/60 [00:26<00:05,  1.49it/s]Generating GIF:  88%|████████▊ | 53/60 [00:26<00:04,  1.69it/s]Generating GIF:  90%|█████████ | 54/60 [00:27<00:04,  1.46it/s]Generating GIF:  98%|█████████▊| 59/60 [00:28<00:00,  3.24it/s]Generating GIF: 100%|██████████| 60/60 [00:28<00:00,  2.10it/s]
-ODC Locations and Capacities:
-ODC 1 Location: (-3.09417, -60.02306), Capacity: 42 cores, Fiber: 0.0 km
-ODC 2 Location: (-3.03914, -59.93611), Capacity: 42 cores, Fiber: 0.0 km
-ODC 3 Location: (-3.13361, -60.02083), Capacity: 42 cores, Fiber: 0.0 km
-ODC 4 Location: (-3.02806, -59.98861), Capacity: 42 cores, Fiber: 0.0 km
-ODC 5 Location: (-3.102419, -60.061689), Capacity: 42 cores, Fiber: 0.0 km
-ODC 6 Location: (-3.09417, -59.99083), Capacity: 42 cores, Fiber: 0.0 km
-ODC 7 Location: (-3.1225, -60.00556), Capacity: 42 cores, Fiber: 0.0 km
-ODC 8 Location: (-3.06472, -60.04361), Capacity: 84 cores, Fiber: 0.0 km
-ODC 9 Location: (-3.08429, -60.07579), Capacity: 42 cores, Fiber: 0.0 km
-ODC 10 Location: (-3.07556, -60.01972), Capacity: 42 cores, Fiber: 0.0 km
-ODC 11 Location: (-3.10361, -59.95667), Capacity: 42 cores, Fiber: 0.0 km
-ODC 12 Location: (-3.09472, -60.03556), Capacity: 42 cores, Fiber: 0.0 km
-ODC 13 Location: (-2.97417, -59.99028), Capacity: 42 cores, Fiber: 0.0 km
-ODC 14 Location: (-3.02139, -59.94583), Capacity: 84 cores, Fiber: 0.0 km
-ODC 15 Location: (-3.05444, -59.98361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 16 Location: (-3.08942, -60.00514), Capacity: 42 cores, Fiber: 0.0 km
-ODC 17 Location: (-3.10889, -60.00111), Capacity: 42 cores, Fiber: 0.0 km
-ODC 18 Location: (-3.11778, -60.01806), Capacity: 42 cores, Fiber: 0.0 km
-ODC 19 Location: (-3.11444, -60.04806), Capacity: 42 cores, Fiber: 0.0 km
-ODC 20 Location: (-3.07222, -59.94861), Capacity: 42 cores, Fiber: 0.0 km
-ODC 21 Location: (-3.03916, -59.91035), Capacity: 42 cores, Fiber: 0.0 km
-ODC 22 Location: (-3.09528, -60.05361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 23 Location: (-3.0875, -60.04028), Capacity: 54 cores, Fiber: 0.0 km
-ODC 24 Location: (-3.10611, -60.0175), Capacity: 42 cores, Fiber: 0.0 km
-ODC 25 Location: (-3.11028, -59.99111), Capacity: 42 cores, Fiber: 0.0 km
-ODC 26 Location: (-3.09778, -60.00667), Capacity: 42 cores, Fiber: 0.0 km
-ODC 27 Location: (-3.07778, -60.00778), Capacity: 42 cores, Fiber: 0.0 km
-ODC 28 Location: (-3.08778, -60.05694), Capacity: 42 cores, Fiber: 0.0 km
-ODC 29 Location: (-3.143782, -60.009315), Capacity: 42 cores, Fiber: 0.0 km
-ODC 30 Location: (-3.09194, -60.06889), Capacity: 42 cores, Fiber: 0.0 km
-ODC 31 Location: (-3.11639, -60.03528), Capacity: 42 cores, Fiber: 0.0 km
-ODC 32 Location: (-3.00917, -59.99083), Capacity: 42 cores, Fiber: 0.0 km
-ODC 33 Location: (-3.02917, -59.97694), Capacity: 42 cores, Fiber: 0.0 km
-ODC 34 Location: (-3.08083, -60.03306), Capacity: 42 cores, Fiber: 0.0 km
-ODC 35 Location: (-3.12861, -60.01306), Capacity: 42 cores, Fiber: 0.0 km
-ODC 36 Location: (-3.04194, -59.92889), Capacity: 126 cores, Fiber: 0.0 km
-ODC 37 Location: (-3.08583, -60.02361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 38 Location: (-3.12917, -60.02667), Capacity: 42 cores, Fiber: 0.0 km
-ODC 39 Location: (-3.05111, -59.99306), Capacity: 42 cores, Fiber: 0.0 km
-ODC 40 Location: (-3.11944, -59.98917), Capacity: 42 cores, Fiber: 0.0 km
-ODC 41 Location: (-3.06556, -60.01528), Capacity: 42 cores, Fiber: 0.0 km
-ODC 42 Location: (-3.10028, -60.02028), Capacity: 42 cores, Fiber: 0.0 km
-ODC 43 Location: (-3.10759, -60.05268), Capacity: 42 cores, Fiber: 0.0 km
-ODC 44 Location: (-3.08667, -59.99583), Capacity: 42 cores, Fiber: 0.0 km
-ODC 45 Location: (-3.11417, -60.01056), Capacity: 42 cores, Fiber: 0.0 km
-ODC 46 Location: (-3.08639, -59.98639), Capacity: 42 cores, Fiber: 0.0 km
-ODC 47 Location: (-3.08028, -60.0575), Capacity: 42 cores, Fiber: 0.0 km
-ODC 48 Location: (-3.03469, -59.9938), Capacity: 42 cores, Fiber: 0.0 km
-ODC 49 Location: (-3.07778, -59.99944), Capacity: 42 cores, Fiber: 0.0 km
-ODC 50 Location: (-3.1075, -60.045), Capacity: 42 cores, Fiber: 0.0 km
-ODC 51 Location: (-3.12833, -60.00361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 52 Location: (-3.07889, -60.07028), Capacity: 42 cores, Fiber: 0.0 km
-ODC 53 Location: (-3.08167, -60.01361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 54 Location: (-3.07611, -60.07889), Capacity: 42 cores, Fiber: 0.0 km
-ODC 55 Location: (-3.10861, -60.02361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 56 Location: (-3.13444, -60.02944), Capacity: 42 cores, Fiber: 0.0 km
-ODC 57 Location: (-3.12611, -60.02361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 58 Location: (-3.12444, -59.9975), Capacity: 42 cores, Fiber: 0.0 km
-ODC 59 Location: (-3.09639, -60.00111), Capacity: 42 cores, Fiber: 0.0 km
-ODC 60 Location: (-3.08778, -60.01694), Capacity: 42 cores, Fiber: 0.0 km
-ODC 61 Location: (-3.1025, -59.99806), Capacity: 42 cores, Fiber: 0.0 km
-ODC 62 Location: (-3.09222, -60.04556), Capacity: 42 cores, Fiber: 0.0 km
-ODC 63 Location: (-3.13639, -60.02472), Capacity: 42 cores, Fiber: 0.0 km
-ODC 64 Location: (-3.0875, -60.03222), Capacity: 42 cores, Fiber: 0.0 km
-ODC 65 Location: (-3.10917, -60.0125), Capacity: 42 cores, Fiber: 0.0 km
-ODC 66 Location: (-3.105, -60.01333), Capacity: 42 cores, Fiber: 0.0 km
-ODC 67 Location: (-3.07889, -60.02472), Capacity: 42 cores, Fiber: 0.0 km
-ODC 68 Location: (-3.08583, -60.01), Capacity: 42 cores, Fiber: 0.0 km
-ODC 69 Location: (-3.12278, -60.01333), Capacity: 42 cores, Fiber: 0.0 km
-ODC 70 Location: (-3.11361, -60.01583), Capacity: 42 cores, Fiber: 0.0 km
-ODC 71 Location: (-3.09694, -60.01528), Capacity: 42 cores, Fiber: 0.0 km
-ODC 72 Location: (-3.10361, -60.02444), Capacity: 42 cores, Fiber: 0.0 km
-ODC 73 Location: (-3.10611, -59.99306), Capacity: 42 cores, Fiber: 0.0 km
-ODC 74 Location: (-3.10306, -60.05083), Capacity: 42 cores, Fiber: 0.0 km
-ODC 75 Location: (-3.11889, -60.04917), Capacity: 42 cores, Fiber: 0.0 km
-ODC 76 Location: (-3.11778, -60.0225), Capacity: 42 cores, Fiber: 0.0 km
-ODC 77 Location: (-3.13389, -60.01667), Capacity: 42 cores, Fiber: 0.0 km
-ODC 78 Location: (-3.09722, -59.99333), Capacity: 42 cores, Fiber: 0.0 km
-ODC 79 Location: (-3.10139, -60.06583), Capacity: 42 cores, Fiber: 0.0 km
-ODC 80 Location: (-3.13861, -60.02167), Capacity: 42 cores, Fiber: 0.0 km
-ODC 81 Location: (-3.126208, -60.015944), Capacity: 42 cores, Fiber: 0.0 km
-ODC 82 Location: (-3.0975, -60.05056), Capacity: 42 cores, Fiber: 0.0 km
-ODC 83 Location: (-3.117444, -60.011722), Capacity: 42 cores, Fiber: 0.0 km
-ODC 84 Location: (-3.01778, -59.94722), Capacity: 42 cores, Fiber: 0.0 km
-ODC 85 Location: (-3.12639, -60.02), Capacity: 42 cores, Fiber: 0.0 km
-ODC 86 Location: (-3.12111, -60.01889), Capacity: 42 cores, Fiber: 0.0 km
-ODC 87 Location: (-3.13056, -60.02111), Capacity: 42 cores, Fiber: 0.0 km
-ODC 88 Location: (-3.13278, -60.02361), Capacity: 42 cores, Fiber: 0.0 km
-ODC 89 Location: (-3.13611, -60.02028), Capacity: 42 cores, Fiber: 0.0 km
-ODC 90 Location: (-3.10028, -60.00639), Capacity: 42 cores, Fiber: 0.0 km
-Execution time: 146.17 seconds
