@@ -13,14 +13,20 @@ $ python3 preprocess_anatel_city_csv.py <dataset> <output_filename_dataset>
 
 ```
 
-After creating the dataset, you shoud run campaign.sh as the example below. Do not forget to the add the created dataset as argument as well.
+After creating the dataset, you shoud follow the instructions below. 
 
-2) How to run the campaign.sh:
+2) How to Reproduce Our Results:
+
+2.1) Open the Create_Campaigns.ipynb notebook and follow the instructions provided. If everything is set up correctly, you should see two directories created within the Campaigns/ folder: one for Natal and the other for Manaus.
+
+2.2) Navigate to one of the directories and run the following commands:
+
 ```
-$ chmod +x campaign.sh
-
-$ ./campaign.sh -j 5 -c 14 -d 11 -C 1000 -o 1 -n "CampaignName" -w 0.4,0.4,0.2 <output_filename_dataset>
+$ chmod +x Placement_<city>_Case_1_2_local_odcs_AllJOBS0.sh
+$ ./Placement_<city>_Case_1_2_local_odcs_AllJOBS0.sh
 
 ```
+Currently, there are five shell scripts, each of which will execute 20 jobs. In total, 100 jobs will be run. If you'd like to adjust the number of jobs, return to Create_Campaigns.ipynb and modify the jobs and numberOfJobsShellScript parameters.
 
-Code will run 5 times, where each run means a different random seed is used.
+
+
