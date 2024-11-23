@@ -348,9 +348,6 @@ class openSimulation:
         #label = next(labelA)
         labelSims = next(labelAsims)
         datatputPHY=[]
-        #dataplr=[]
-        #datatput=[]
-        #datarxpkt=[] 
         if metric.split('-')[1] == 'Jobs':
             xlabel='Jobs'
             ylabel=metric +" "+ ylabelpart2
@@ -398,7 +395,7 @@ class openSimulation:
             #plt.tight_layout()
             #plt.show()
     
-        os.makedirs(outputDir+"/ps", exist_ok=True)
+        #os.makedirs(outputDir+"/ps", exist_ok=True)
         os.makedirs(outputDir+"/png", exist_ok=True)
         os.makedirs(outputDir+"/html", exist_ok=True)
     
@@ -408,7 +405,7 @@ class openSimulation:
         else:
             imgfilename = metric + '_CI_'+curCampaign
         plt.savefig(outputDir+"/png/"+imgfilename+".png")
-        plt.savefig(outputDir+"/ps/"+imgfilename+".eps")
+        #plt.savefig(outputDir+"/ps/"+imgfilename+".eps")
         pio.write_html(fig, file=outputDir+"/html/"+imgfilename+'.html', auto_open=True)
         if bool(self.showPlot):
             plt.show()
