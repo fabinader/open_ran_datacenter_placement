@@ -6,7 +6,7 @@ ScriptParameters:
     cluster_path: /home/drdluna/ # Path where your script is located
     outputDir:
          - outputDir # parameter name in your script
-         - /home/oai-ufrn/Repositories/tests/open_ran_datacenter_placement/Results/ # Path where your results will be placed (your script must have this parameter)             
+         - /home/ubuntu/EmbrapiiCPqD/OpenRanDatacenterPlacement/open_ran_datacenter_placement/ # Path where your results will be placed (your script must have this parameter)             
     seed: seed # parameter name of random seed used in your script      
     CampaignTag: teste          # Output filename
     simLocation: local            # Set location of simulation (local or cluster)
@@ -19,8 +19,8 @@ ShellScriptParameters:
     nOfCurlinesTied: 3  # if greater than nOfCurlines, means that campaignX is included
     daytime: 1          # number of days to simulate (only for cluster simulation) 
     htime: 12            # number of hours to simulate (only for cluster simulation) 
-    ntasks: 8           # number of simulation in one .sh (only for cluster simulation - default: 30) 
-    cpusPerTask: 16      # numer of CPUs per Task
+    ntasks: 8           # number of simulation in one job (IMPORTANT)
+    cpusPerTask: 16      # numer of CPUs per Task (only for cluster simulation) 
     numberOfJobsShellScript: 20
 
 #Lines/curves
