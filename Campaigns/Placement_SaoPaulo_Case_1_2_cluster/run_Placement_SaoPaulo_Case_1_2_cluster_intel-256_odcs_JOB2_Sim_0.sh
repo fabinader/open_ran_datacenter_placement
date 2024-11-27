@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=1-12:0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos
+#SBATCH --time=0-1:0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 mkdir -p /home/rqdfhsilva/CPQD/results_Placement_SaoPaulo_Case_1_2_cluster_odcs/JOB2/Sim_0

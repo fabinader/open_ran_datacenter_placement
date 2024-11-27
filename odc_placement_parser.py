@@ -690,9 +690,9 @@ def main():
     
     #os.makedirs(outputDir+"/data", exist_ok=True)
     
-    df_client_association = pd.DataFrame(client_associations,columns=['oru','odc_location'])
-    df_capacities = pd.DataFrame(capacities.items(),columns=['odc_locations','capacities'])
-    df_fiberlength = pd.DataFrame(fiberlength.items(),columns=['odc_locations','fiberlength'])
+    df_client_association = pd.DataFrame([(oru, tuple(map(float, odc))) for oru, odc in client_associations],columns=['oru', 'odc_location'])
+    df_capacities = pd.DataFrame([(tuple(map(float, loc)), cap) for loc, cap in capacities.items()], columns=['odc_locations', 'capacities'])
+    df_fiberlength = pd.DataFrame([(tuple(map(float, loc)), fiber) for loc, fiber in fiberlength.items()],columns=['odc_locations', 'fiberlength'])
     
     df_client_association.to_csv(outputDir+"/"+"df_client_association"+".csv")
     df_capacities.to_csv(outputDir+"/"+"df_capacities"+".csv")
