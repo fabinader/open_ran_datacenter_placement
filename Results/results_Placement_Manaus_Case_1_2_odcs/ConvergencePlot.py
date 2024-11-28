@@ -26,7 +26,7 @@ import plotly.express as px
 import plotly.io as pio
 
 class openSimulation:
-    def __init__(self, configurations_file):
+    def __init__(self, configurations_file, save_path, campaign_path):
         self.email_to = 'fulano@gmail.com'            
         with open(configurations_file, 'r') as f:
             self.doc = yaml.load(f, Loader=yaml.loader.BaseLoader)
@@ -50,7 +50,8 @@ class openSimulation:
         # ns-3 script configuration
         self.script = str(self.doc['ScriptParameters']['script'])
         self.local_path = str(self.doc['ScriptParameters']['local_path'])
-        self.plot_path = os.getcwd()
+        self.save_path = save_path
+        self.campaign_path = os.getcwd()
         #self.local_path = os.getcwd() + '/' + self.local_path
         self.cluster_path = str(self.doc['ScriptParameters']['cluster_path'])
         self.outputDirName = str(self.doc['ScriptParameters']['outputDir'][0])
@@ -108,7 +109,8 @@ class openSimulation:
         return NewVetorMedia,VetorMedia,VetorVar,VetorMoment3,VetorMoment4,VetorVpp,VetorCorr
     
     def plotCampaign(self,curCampaign, metric,jobs):
-        outputDir = self.plot_path
+        outputDir = self.save_path
+        resultsDir = self.campaign_path
         njobs = min(jobs,self.nJobs)
         m_plr, m_plrCI, m_tput, m_tputCI, m_pkt, m_pktCI = [], [], [], [], [], []
         m_tput1,m_tput2=[],[]
@@ -286,6 +288,7 @@ class openSimulation:
             curline2 = self.campaignLines[2]
             campaignX = self.campaignX[0]
             dfMeanAllSims = pd.DataFrame()
+            dfMeanJobsAccumulated = pd.DataFrame()
             dfIntervalAllSims = pd.DataFrame()
             isim = 0
             for i in range(len(self.doc['scenarioParameters'][curline])):
@@ -299,19 +302,21 @@ class openSimulation:
                         vtIntervalJobs = []
                         for iJob in range(0,njobs):
                             if metric.split('-')[2] == 'Capacity':
-                                filepath = outputDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_capacities.csv"
+                                filepath = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_capacities.csv"
                                 df = pd.read_csv(filepath, usecols=['odc_locations', 'capacities'])                            
                                 vtJobs = np.append(vtJobs,df['capacities'])
                                 vtMeanJobs = np.mean(vtJobs)
                                 vtMeanJobsAccumulated = np.append(vtMeanJobsAccumulated,vtMeanJobs)
                                 #print(vtMeanJobsAccumulated)
                                 _, vtInterval = st.t.interval(0.99, len(vtJobs)-1, loc=vtMeanJobs, scale=st.sem(vtJobs))
+                                #print('vtinterval', vtInterval)
                                 vtIntervalJobs.append(vtInterval - vtMeanJobs)
                                 #print(vtIntervalJobs)
                                 ylabelpart2 = '(CPUs/ODC)'
                             elif metric.split('-')[2] == 'Fiberlenght':
-                                filepath = outputDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_fiberlength.csv"
+                                filepath = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_fiberlength.csv"
                                 df = pd.read_csv(filepath, usecols=['odc_locations', 'fiberlength'])
+                                vtJobs = np.append(vtJobs,df['fiberlength'])
                                 vtMeanJobs = np.mean(vtJobs)
                                 vtMeanJobsAccumulated = np.append(vtMeanJobsAccumulated,vtMeanJobs)
                                 #print(vtMeanJobsAccumulated)
@@ -319,6 +324,11 @@ class openSimulation:
                                 vtIntervalJobs.append(vtInterval - vtMeanJobs)
                                 #print(vtIntervalJobs)
                                 ylabelpart2 = '(kms)'
+                        dfMeanJobsAccumulated = pd.DataFrame(vtMeanJobsAccumulated)
+                        dfMeanAllSims = pd.concat([dfMeanAllSims,dfMeanJobsAccumulated], axis=1)
+                        dfIntervalJobs = pd.DataFrame(vtIntervalJobs)
+                        dfIntervalAllSims = pd.concat([dfIntervalAllSims,dfIntervalJobs], axis=1)
+                        #print(dfIntervalAllSims)
                     isim +=1
             #Legend of 3/1/3
             for ilegend in self.doc['scenarioParameters'][curline]:
@@ -332,7 +342,6 @@ class openSimulation:
                             legendSimsEntry = legendtag2 + "," + " " + campaignX + " " + ilegendcdf 
                             legendSims.append(legendSimsEntry)
 
-
         ##### START OF PLOTTING SECTION ####         
 
         
@@ -341,72 +350,20 @@ class openSimulation:
         #label = next(labelA)
         labelSims = next(labelAsims)
         datatputPHY=[]
-        #dataplr=[]
-        #datatput=[]
-        #datarxpkt=[] 
-        if metric.split('-')[2]=='SimTime': # no CI
-            print('entrou em simtime')
-            xlabel='Tempo (s)'    
-            # Confidence interval according to https://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
-            #commandScriptSplit = self.commandScript.split(' ')
-            #simTimeValue = commandScriptSplit[2].split('=')[1]
-            plt.figure(figsize=(20,10))
-            ylabel= metric + ylabelpart2
-            for i in range (dfMovingMeanAllSims.shape[1]):
-                simTimeValue = vtLastTimeValueAllSims[i]
-                resxData = np.linspace(1,int(simTimeValue),len(dfMovingMeanAllSims.iloc[:,i].expanding().mean()))
-                plt.plot(resxData,dfMovingMeanAllSims.iloc[:,i].expanding().mean(), label=labelSims, marker=marker,color=color,markevery=markers_on,ls=linestyle_on)
-                trace1 = go.Scatter(
-                    x=resxData,
-                    y=dfMovingMeanAllSims.iloc[:,i].expanding().mean(),
-                    name=labelSims,
-                    line_dash=ls_plotly_on,
-                    marker_symbol=markers_on
-                )
-                datatputPHY.append(trace1)
-                color=next(colors)
-                marker=next(markersA)
-                markers_on=next(markers_on_all)
-                labelSims = next(labelAsims)
-                linestyle_on=next(linestyle)
-                ls_plotly_on = next(ls_plotly)
-            layout = go.Layout(
-                yaxis=dict(
-                    domain=[0, 1]
-                ),
-                legend=dict(
-                    traceorder="normal"
-                ),
-                xaxis_title=xlabel,
-                yaxis_title=ylabel
-                )
-            fig = go.Figure(data=datatputPHY, layout=layout)
-            #fig.update_yaxes(type="log")
-            
-            plt.xlabel(xlabel)
-            plt.ylabel(ylabel)
-            #plt.xlim([0.10, 0.55]) 
-            #plt.legend(loc='best', numpoints=1)
-            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-            plt.grid()
-            #plt.tight_layout()
-            #plt.show()
-        elif metric.split('-')[1] == 'Jobs':
-            print('entrou em jobs')
+        if metric.split('-')[1] == 'Jobs':
             xlabel='Jobs'
             ylabel=metric +" "+ ylabelpart2
             plt.figure(figsize=(20,10))
             for i in range (dfMeanAllSims.shape[1]):
-                resxData = np.linspace(1,njobs+1)
-                resyData =vtMeanJobsAccumulated
-                print(resyData)
-                plt.plot(resxData, resyData, label=labelSims, marker=marker,color=color,markevery=markers_on,ls=linestyle_on)
-                plt.errorbar(resxData,resyData, yerr = vtIntervalJobs, marker=marker,color=color, ls = 'none', lw = 2, capthick = 2,markevery=markers_on)
+                resxData = np.linspace(1,njobs,len(dfMeanAllSims.iloc[:,i]))
+                resyData = dfMeanAllSims.iloc[:,i].to_numpy()
+                #plt.plot(resxData, resyData, label=labelSims, marker=marker,color=color,markevery=markers_on,ls=linestyle_on)
+                plt.errorbar(resxData,resyData, yerr = dfIntervalAllSims.iloc[:,i], marker=marker,color=color, ls = 'none', lw = 2, capthick = 2,markevery=markers_on)
                 trace1 = go.Scatter(
                     x=resxData,
                     y=resyData,
                     error_y=dict(type='data', # value of error bar given in data coordinates
-                                array=vtIntervalJobs,
+                                array=dfIntervalAllSims.iloc[:,i],
                                 visible=True),
                     name=labelSims,
                     line_dash=ls_plotly_on,
@@ -439,36 +396,36 @@ class openSimulation:
             plt.grid()
             #plt.tight_layout()
             #plt.show()
-    
-        os.makedirs(outputDir+"/ps", exist_ok=True)
-        os.makedirs(outputDir+"/png", exist_ok=True)
-        os.makedirs(outputDir+"/html", exist_ok=True)
+
+        #os.makedirs(outputDir+"/ps", exist_ok=True)
+        os.makedirs(outputDir+"/Convergence/"+campaign_path.split('/')[-2]+"/png", exist_ok=True)
+        os.makedirs(outputDir+"/Convergence/"+campaign_path.split('/')[-2]+"/html", exist_ok=True)
     
         
         if bool(self.plotCI):
             imgfilename = metric + '_CI_'+curCampaign
         else:
             imgfilename = metric + '_CI_'+curCampaign
-        plt.savefig(outputDir+"/png/"+imgfilename+".png")
-        plt.savefig(outputDir+"/ps/"+imgfilename+".eps")
-        pio.write_html(fig, file=outputDir+"/html/"+imgfilename+'.html', auto_open=True)
+        plt.savefig(outputDir+"/Convergence/"+campaign_path.split('/')[-2]+"/png/"+imgfilename+'.png')
+        #plt.savefig(outputDir+"/ps/"+imgfilename+".eps")
+        pio.write_html(fig, file=outputDir+"/Convergence/"+campaign_path.split('/')[-2]+"/html/"+imgfilename+'.html', auto_open=True)
         if bool(self.showPlot):
             plt.show()
             fig.show()
         else:
             plt.close()
         
-            
-
 parser = argparse.ArgumentParser()
-parser.add_argument("-f", "--file", type=str, help='Configuration File')
-parser.add_argument("-p", "--path", type=str, help='Path')
 parser.add_argument("-j", "--jobs", type=str, help='The script will ignore the value in .yaml')
+parser.add_argument("-f", "--file", type=str, help='Configuration File')
+parser.add_argument("-p", "--campaign_path", type=str, help='Path')
+parser.add_argument("-s", "--save_path", type=str, help='Path to save the output files')
 args = parser.parse_args()
 configurations_file = args.file
-plotpath = args.path
+campaign_path = args.campaign_path
 jobs = int(args.jobs)
-os.chdir(plotpath)
+save_path = args.save_path
+os.chdir(campaign_path)
 
 with open(configurations_file, 'r') as f:
     doc = yaml.load(f, Loader=yaml.loader.BaseLoader)
@@ -477,7 +434,7 @@ with open(configurations_file, 'r') as f:
 
 campaign = doc['campaignLines']['campaignX']
 print(campaign)
-simu = openSimulation(configurations_file)
+simu = openSimulation(configurations_file, save_path, campaign_path)
 
 finalMetrics = ['PHY-Jobs-Capacity',
                 'PHY-Jobs-Fiberlenght']
