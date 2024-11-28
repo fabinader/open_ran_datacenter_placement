@@ -1,0 +1,70 @@
+# ns-3 script configuration
+ScriptParameters:
+
+    script: odc_placement_parser.py   # Script
+    local_path: /home/oai-ufrn/Repositories/open_ran_datacenter_placement/ # Path where your script is located
+    cluster_path: /home/rqdfhsilva/CPQD/ # Path where your script is located
+    environment_name: teste
+    outputDir:
+         - outputDir # parameter name in your script
+         - /home/oai-ufrn/Repositories/open_ran_datacenter_placement/Results/ # Path where your results will be placed (your script must have this parameter)             
+    seed: seed # parameter name of random seed used in your script      
+    CampaignTag: teste          # Output filename
+    simLocation: intel-256           # Set location of simulation (local or cluster)
+
+# Shell Script Parameters configuration
+ShellScriptParameters: 
+    
+    nOfCurlines: 3      # number of Campaign Lines
+    SimTied: 1
+    nOfCurlinesTied: 3  # if greater than nOfCurlines, means that campaignX is included 
+    daytime: 0          # number of days to simulate (only for cluster simulation)  
+    htime: 1            # number of hours to simulate (only for cluster simulation) 
+    ntasks: 8           # number of simulation in one job (IMPORTANT)
+    cpusPerTask: 16      # numer of CPUs per Task
+    numberOfJobsShellScript: 10
+
+#Lines/curves
+campaignLines:
+
+    campaignX:          # campaignX: parameter name to vary in the X-axis (ONLY 1)
+        - odcs
+    campaignLines:      # campaignLines: parameter name to vary in different lines
+        - wcpu
+        - wodc
+        - wd
+    jobs: 100             # Number of jobs to run 
+
+# Simu parameters
+scenarioParameters: 
+
+    cpuper100:
+        - 14
+    maxdistance:            # Simulation duration (seconds)
+        - 11
+    capacity:
+        - 1000
+    odcs:
+        - 0
+        - 493
+        - 328
+        - 246
+    trials: 
+        - 60
+    population: 
+        - 300
+    process:
+        - 8
+    wcpu:
+        - 0
+        - 0.5
+    wodc:
+        - 0
+        - 0
+    wd:
+        - 1
+        - 0.5
+    
+    csv:
+        - /home/rqdfhsilva/CPQD/CityData/Recife.csv
+    

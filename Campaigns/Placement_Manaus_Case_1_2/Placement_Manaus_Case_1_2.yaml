@@ -4,6 +4,7 @@ ScriptParameters:
     script: odc_placement_parser.py   # Script
     local_path: /home/ubuntu/EmbrapiiCPqD/OpenRanDatacenterPlacement/open_ran_datacenter_placement/ # Path where your script is located
     cluster_path: /home/drdluna/ # Path where your script is located
+    environment_name: cpqd
     outputDir:
          - outputDir # parameter name in your script
          - /home/ubuntu/EmbrapiiCPqD/OpenRanDatacenterPlacement/open_ran_datacenter_placement/ # Path where your results will be placed (your script must have this parameter)             

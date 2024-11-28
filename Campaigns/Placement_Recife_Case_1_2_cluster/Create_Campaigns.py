@@ -25,6 +25,7 @@ class Simulation:
         self.local_path = str(self.doc['ScriptParameters']['local_path'])
         #self.local_path = os.getcwd() + '/' + self.local_path
         self.cluster_path = str(self.doc['ScriptParameters']['cluster_path'])
+        self.environment_name = str(self.doc['ScriptParameters']['environment_name'])
         self.outputDirName = str(self.doc['ScriptParameters']['outputDir'][0])
         self.outputDir = str(self.doc['ScriptParameters']['outputDir'][1])
         self.seed = str(self.doc['ScriptParameters']['seed'])
@@ -319,7 +320,7 @@ class Simulation:
                                 f.write("cd '"+self.cluster_path+"'"+"\n")
                                 f.write("sleep $((11 + RANDOM % 50))"+"\n")
                                 f.write('eval "$(conda shell.bash hook)"\n')
-                                f.write('conda activate cpqd\n')
+                                f.write('conda activate '+self.environment_name+'\n')
                             else:
                                 outputDir = self.outputDir + 'results_' + self.campaign_name + '_' + curCampaign
                                 f.write('mkdir -p '+outputDir+"/JOB"+str(iJob)+"/Sim_"+str(count) +'\n')
