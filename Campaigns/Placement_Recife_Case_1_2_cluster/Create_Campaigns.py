@@ -159,7 +159,21 @@ class Simulation:
                                 with open('run_%s.sh' % sh_name, 'w') as f:                    
                                     f.write('#!/bin/bash\n')
                                     if self.simLocation == 'cluster' or self.simLocation == 'service' or self.simLocation == 'intel-512' or self.simLocation == 'intel-256':
-                                        print("TODO")
+                                        outputDir = self.cluster_path +'results_'+ self.campaign_name + '_' + curCampaign
+                                        f.write('#SBATCH --time='+self.daytime+'-'+self.htime+':0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos\n')
+                                        f.write('#SBATCH --ntasks=1\n')
+                                        f.write('#SBATCH --cpus-per-task='+self.cpusPerTask+'\n')
+                                        command1 = (
+                                        "python3 " + self.script +
+                                        " --"+self.outputDirName+"="+outputDir+"/JOB"+str(iJob)+'/Sim_' + str(count) +
+                                        " --"+self.seed+"="+str(jobRunSeed[iJob]))
+                                        f.write('mkdir -p '+outputDir+"/JOB"+str(iJob)+"/Sim_"+str(count) +'\n')
+                                        f.write('cp -f run_'+sh_name+'.sh'+' '+outputDir+'\n')
+                                        f.write('cp -f '+self.configurations_file+ ' ' +outputDir+'\n')
+                                        f.write("cd '"+self.cluster_path+"'"+"\n")
+                                        f.write("sleep $((11 + RANDOM % 50))"+"\n")
+                                        f.write('eval "$(conda shell.bash hook)"\n')
+                                        f.write('conda activate '+self.environment_name+'\n')
                                     else:
                                         outputDir = self.outputDir + 'results_' + self.campaign_name + '_' + curCampaign
                                         f.write('mkdir -p '+outputDir+"/JOB"+str(iJob)+"/Sim_"+str(count) +'\n')
@@ -271,7 +285,21 @@ class Simulation:
                             with open('run_%s.sh' % sh_name, 'w') as f:
                                 f.write('#!/bin/bash\n')
                                 if self.simLocation == 'cluster' or self.simLocation == 'service' or self.simLocation == 'intel-512' or self.simLocation == 'intel-256':
-                                    print("TODO")
+                                    outputDir = self.cluster_path +'results_'+ self.campaign_name + '_' + curCampaign
+                                    f.write('#SBATCH --time='+self.daytime+'-'+self.htime+':0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos\n')
+                                    f.write('#SBATCH --ntasks=1\n')
+                                    f.write('#SBATCH --cpus-per-task='+self.cpusPerTask+'\n')
+                                    command1 = (
+                                    "python3 " + self.script +
+                                    " --"+self.outputDirName+"="+outputDir+"/JOB"+str(iJob)+'/Sim_' + str(count) +
+                                    " --"+self.seed+"="+str(jobRunSeed[iJob]))
+                                    f.write('mkdir -p '+outputDir+"/JOB"+str(iJob)+"/Sim_"+str(count) +'\n')
+                                    f.write('cp -f run_'+sh_name+'.sh'+' '+outputDir+'\n')
+                                    f.write('cp -f '+self.configurations_file+ ' ' +outputDir+'\n')
+                                    f.write("cd '"+self.cluster_path+"'"+"\n")
+                                    f.write("sleep $((11 + RANDOM % 50))"+"\n")
+                                    f.write('eval "$(conda shell.bash hook)"\n')
+                                    f.write('conda activate '+self.environment_name+'\n')
                                 else:
                                     outputDir = self.outputDir + 'results_' + self.campaign_name + '_' + curCampaign
                                     f.write('mkdir -p '+outputDir+"/JOB"+str(iJob)+"/Sim_"+str(count) +'\n')
