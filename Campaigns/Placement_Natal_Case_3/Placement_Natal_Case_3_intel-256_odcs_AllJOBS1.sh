@@ -7,6 +7,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB10_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB10_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB10_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB10_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB10_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_2.sh
@@ -15,6 +16,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB11_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_2.sh
@@ -23,6 +25,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB12_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_2.sh
@@ -31,6 +34,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB13_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_2.sh
@@ -39,6 +43,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB14_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_2.sh
@@ -47,6 +52,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB15_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_2.sh
@@ -55,6 +61,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB16_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_2.sh
@@ -63,6 +70,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB17_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_2.sh
@@ -71,6 +79,7 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB18_Sim_8.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_0.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_1.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_2.sh
@@ -79,3 +88,4 @@ sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_4.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_5.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_6.sh
 sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_7.sh
+sbatch -p intel-256 run_Placement_Natal_Case_3_intel-256_odcs_JOB19_Sim_8.sh

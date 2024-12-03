@@ -20,7 +20,7 @@ ShellScriptParameters:
     nOfCurlinesTied: 3  # if greater than nOfCurlines, means that campaignX is included 
     daytime: 0          # number of days to simulate (only for cluster simulation)  
     htime: 1            # number of hours to simulate (only for cluster simulation) 
-    ntasks: 8           # number of simulation in one job (IMPORTANT)
+    ntasks: 9           # number of simulation in one job (IMPORTANT)
     cpusPerTask: 16      # numer of CPUs per Task
     numberOfJobsShellScript: 10
 

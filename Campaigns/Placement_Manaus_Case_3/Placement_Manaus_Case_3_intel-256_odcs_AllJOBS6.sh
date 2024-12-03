@@ -7,6 +7,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB60_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB60_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB60_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB60_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB60_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_2.sh
@@ -15,6 +16,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB61_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_2.sh
@@ -23,6 +25,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB62_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_2.sh
@@ -31,6 +34,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB63_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_2.sh
@@ -39,6 +43,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB64_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_2.sh
@@ -47,6 +52,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB65_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_2.sh
@@ -55,6 +61,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB66_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_2.sh
@@ -63,6 +70,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB67_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_2.sh
@@ -71,6 +79,7 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB68_Sim_8.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_0.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_1.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_2.sh
@@ -79,3 +88,4 @@ sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_4.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_5.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_6.sh
 sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_7.sh
+sbatch -p intel-256 run_Placement_Manaus_Case_3_intel-256_odcs_JOB69_Sim_8.sh

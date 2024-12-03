@@ -73,6 +73,7 @@ class openSimulation:
         
          #Lines/curves
         self.campaignX = self.doc['campaignLines']['campaignX']
+        print('campaignx:', self.campaignX)
         self.campaignLines = self.doc['campaignLines']['campaignLines']
         self.nJobs = int(self.doc['campaignLines']['jobs'])
 
@@ -148,7 +149,7 @@ class openSimulation:
                     df=pd.DataFrame()
                     dfMovingMean=pd.DataFrame()
                     vtLastTimeValue=[]
-                    if metric.split('-')[1] == 'PHY':
+                    if metric.split('-')[1] == 'MACRO':
                         if metric.split('-')[2] == 'SimTime':
                             for iJob in range(0,njobs):
                                 if metric.split('-')[3] == 'NR':
@@ -287,60 +288,62 @@ class openSimulation:
             curline1 = self.campaignLines[1]
             curline2 = self.campaignLines[2]
             campaignX = self.campaignX[0]
+            simNum = self.ntasks[0]
             dfMeanAllSims = pd.DataFrame()
             dfMeanJobsAccumulated = pd.DataFrame()
             dfIntervalAllSims = pd.DataFrame()
-            isim = 0
-            for i in range(len(self.doc['scenarioParameters'][curline])):
-                for iCampaignX in range(len(self.doc['scenarioParameters'][campaignX])):
-                    df=pd.DataFrame()
-                    if metric.split('-')[1] == 'Jobs':
-                        vtJobs = []
-                        vtMeanJobs = []
-                        vtMeanJobsAccumulated = []
-                        vtInterval = []
-                        vtIntervalJobs = []
-                        for iJob in range(0,njobs):
-                            if metric.split('-')[2] == 'Capacity':
-                                filepath = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_capacities.csv"
-                                df = pd.read_csv(filepath, usecols=['odc_locations', 'capacities'])                            
-                                vtJobs = np.append(vtJobs,df['capacities'])
-                                vtMeanJobs = np.mean(vtJobs)
-                                vtMeanJobsAccumulated = np.append(vtMeanJobsAccumulated,vtMeanJobs)
-                                #print(vtMeanJobsAccumulated)
-                                _, vtInterval = st.t.interval(0.99, len(vtJobs)-1, loc=vtMeanJobs, scale=st.sem(vtJobs))
-                                #print('vtinterval', vtInterval)
-                                vtIntervalJobs.append(vtInterval - vtMeanJobs)
-                                #print(vtIntervalJobs)
-                                ylabelpart2 = '(CPUs/ODC)'
-                            elif metric.split('-')[2] == 'Fiberlenght':
-                                filepath = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_fiberlength.csv"
-                                df = pd.read_csv(filepath, usecols=['odc_locations', 'fiberlength'])
-                                vtJobs = np.append(vtJobs,df['fiberlength'])
-                                vtMeanJobs = np.mean(vtJobs)
-                                vtMeanJobsAccumulated = np.append(vtMeanJobsAccumulated,vtMeanJobs)
-                                #print(vtMeanJobsAccumulated)
-                                _, vtInterval = st.t.interval(0.99, len(vtJobs)-1, loc=vtMeanJobs, scale=st.sem(vtJobs))
-                                vtIntervalJobs.append(vtInterval - vtMeanJobs)
-                                #print(vtIntervalJobs)
-                                ylabelpart2 = '(kms)'
-                        dfMeanJobsAccumulated = pd.DataFrame(vtMeanJobsAccumulated)
-                        dfMeanAllSims = pd.concat([dfMeanAllSims,dfMeanJobsAccumulated], axis=1)
-                        dfIntervalJobs = pd.DataFrame(vtIntervalJobs)
-                        dfIntervalAllSims = pd.concat([dfIntervalAllSims,dfIntervalJobs], axis=1)
-                        #print(dfIntervalAllSims)
-                    isim +=1
+            for isimNum in range(int(self.doc['ShellScriptParameters']['ntasks'])):
+                df=pd.DataFrame()
+                if metric.split('-')[1] == 'Jobs':
+                    vtJobs = []
+                    vtMeanJobs = []
+                    vtMeanJobsAccumulated = []
+                    vtInterval = []
+                    vtIntervalJobs = []
+                    for iJob in range(0,njobs):
+                        #print('iJob:', iJob)
+                        #print('isim: ',isimNum)
+                        if metric.split('-')[2] == 'Capacity':
+                            filepath = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isimNum)+"/df_capacities.csv"
+                            #print(filepath)
+                            df = pd.read_csv(filepath, usecols=['odc_locations', 'capacities'])                            
+                            vtJobs = np.append(vtJobs,df['capacities'])
+                            vtMeanJobs = np.mean(vtJobs)
+                            vtMeanJobsAccumulated = np.append(vtMeanJobsAccumulated,vtMeanJobs)
+                            #print(vtMeanJobsAccumulated)
+                            _, vtInterval = st.t.interval(0.99, len(vtJobs)-1, loc=vtMeanJobs, scale=st.sem(vtJobs))
+                            #print('vtinterval', vtInterval)
+                            vtIntervalJobs.append(vtInterval - vtMeanJobs)
+                            #print(vtIntervalJobs)
+                            ylabelpart2 = '(CPUs/ODC)'
+                        elif metric.split('-')[2] == 'Fiberlenght':
+                            filepath = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isimNum)+"/df_fiberlength.csv"
+                            df = pd.read_csv(filepath, usecols=['odc_locations', 'fiberlength'])
+                            vtJobs = np.append(vtJobs,df['fiberlength'])
+                            vtMeanJobs = np.mean(vtJobs)
+                            vtMeanJobsAccumulated = np.append(vtMeanJobsAccumulated,vtMeanJobs)
+                            #print(vtMeanJobsAccumulated)
+                            _, vtInterval = st.t.interval(0.99, len(vtJobs)-1, loc=vtMeanJobs, scale=st.sem(vtJobs))
+                            vtIntervalJobs.append(vtInterval - vtMeanJobs)
+                            #print(vtIntervalJobs)
+                            ylabelpart2 = '(kms)'
+                    dfMeanJobsAccumulated = pd.DataFrame(vtMeanJobsAccumulated)
+                    dfMeanAllSims = pd.concat([dfMeanAllSims,dfMeanJobsAccumulated], axis=1)
+                    dfIntervalJobs = pd.DataFrame(vtIntervalJobs)
+                    dfIntervalAllSims = pd.concat([dfIntervalAllSims,dfIntervalJobs], axis=1)
+                    #print(dfIntervalAllSims)
             #Legend of 3/1/3
-            for ilegend in self.doc['scenarioParameters'][curline]:
-                legendtag = self.CampaignTag + ": " + curline + " " + ilegend
-                for ilegend1 in self.doc['scenarioParameters'][curline1]:
-                    legendtag1 = legendtag + ", " + curline1 + " " + ilegend1
-                    for ilegend2 in self.doc['scenarioParameters'][curline2]:
-                        legendtag2 = legendtag1 + ", " + curline2 + " " + ilegend2
-                        legend.append(legendtag2) 
-                        for ilegendcdf in self.doc['scenarioParameters'][campaignX]:
-                            legendSimsEntry = legendtag2 + "," + " " + campaignX + " " + ilegendcdf 
-                            legendSims.append(legendSimsEntry)
+            curlineLegend = self.doc['scenarioParameters'][curline]
+            curlineLegend1 = self.doc['scenarioParameters'][curline1]
+            curlineLegend2 = self.doc['scenarioParameters'][curline2]
+            for ilegend in range(len(self.doc['scenarioParameters'][curline])):
+                legendtag = self.CampaignTag + ": " + curline + " " + curlineLegend[ilegend] + ", " + curline1 + " " + curlineLegend1[ilegend] + ", " + curline2 + " " + curlineLegend2[ilegend]
+                #print('ilegend', ilegend)
+                #print('curline', curline[ilegend])
+                for ilegendcdf in self.doc['scenarioParameters'][campaignX]:
+                    legendSimsEntry = legendtag + "," + " " + campaignX + " " + ilegendcdf 
+                    legendSims.append(legendSimsEntry)
+                    #print('legendSimsEntry', legendSimsEntry)
 
         ##### START OF PLOTTING SECTION ####         
 
@@ -436,8 +439,8 @@ campaign = doc['campaignLines']['campaignX']
 print(campaign)
 simu = openSimulation(configurations_file, save_path, campaign_path)
 
-finalMetrics = ['PHY-Jobs-Capacity',
-                'PHY-Jobs-Fiberlenght']
+finalMetrics = ['MACRO-Jobs-Capacity',
+                'MACRO-Jobs-Fiberlenght']
 
 for iMet in finalMetrics:
     for simC in campaign:
