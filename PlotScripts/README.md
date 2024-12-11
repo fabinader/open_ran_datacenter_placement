@@ -5,7 +5,8 @@
    * The **ConvergencePlot.ipynb** file is used to generate plots for visualizing the convergence of the metrics `fiberlength` and `capacity` for each simulation generated during the campaign. The step-by-step usage is described below:  
    1. Specify the location of the **ConvergencePlot.ipynb** file;  
    2. Generate the script file **ConvergencePlot.py**;  
-      * The **ConvergencePlot.py** script implements the logic for data retrieval, considering the number of JOBs and the metrics (`fiberlength` and `capacity`).  
+      * The **ConvergencePlot.py** script implements the logic for data retrieval, considering the number of JOBs and the metrics (`fiberlength` and `capacity`);
+      * Only the 3/1/3 campaign format is implemented.
    3. Run the **ConvergencePlot.py** script with the appropriate configurations:  
       * `-j`: Number of JOBs to be plotted;  
       * `-f`: Configuration file name;  
