@@ -504,4 +504,3 @@ simu = Simulation(configurations_file)
 
 for simC in campaign:
     simu.runCampaign(simC)
-    
