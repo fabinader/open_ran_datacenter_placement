@@ -22,7 +22,7 @@ The next two steps are exemplified for each city addressed in the study.
 
    The **.yaml** file contains all campaign settings, as shown below:  
 
-   1. Campaign generation script configurations  
+   1. Campaign generation script configurations;  
    ```
    ScriptParameters:
      script: odc_placement_parser.py # Script name
@@ -36,7 +36,7 @@ The next two steps are exemplified for each city addressed in the study.
      CampaignTag: Case1_2 # Output filename
      simLocation: intel-256 # Set the location of the simulation (local or cluster system name)
    ```  
-   2. Campaign organization settings  
+   2. Campaign organization settings;  
    ```
    ShellScriptParameters:    
      nOfCurlines: 3      # Number of campaign lines
@@ -62,7 +62,7 @@ The next two steps are exemplified for each city addressed in the study.
           * 3/1/3  
           * 4/1/2  
           * 5/1/2   
-   3. Parameters used in the campaign  
+   3. Parameters used in the campaign;  
       * These are the parameters that vary in the campaign. Specify which parameter(s) will make up the curve(s) in the graph and which one (ONLY 1) will be on the X-axis of the graphs.  
       ```
       campaignLines:
@@ -74,7 +74,7 @@ The next two steps are exemplified for each city addressed in the study.
           - wd
         jobs: 100 # Number of jobs to run 
       ```  
-   4. Parameters used in the simulation  
+   4. Parameters used in the simulation.  
       ```
       scenarioParameters: 
         cpuper100:
@@ -105,4 +105,8 @@ The next two steps are exemplified for each city addressed in the study.
           - 0.5
         csv: # Path of the CSV file used in the simulation
           - /home/rqdfhsilva/CPQD/CityData/SaoPaulo.csv 
-      ```  
+      ```
+6. Run the Creation_Campaigns.py script.
+   ```
+   %run Create_Campaigns -f "Placement_SaoPaulo_Case_1_2_cluster.yaml"
+   ```
