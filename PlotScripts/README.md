@@ -1,32 +1,21 @@
-# open_ran_datacenter_placement
-Open RAN Datacente Placement
+# Plot Scripts
 
+## Instructions
+### Convergence Plots:  
+   * The **ConvergencePlot.ipynb** file is used to generate plots for visualizing the convergence of the metrics `fiberlength` and `capacity` for each simulation generated during the campaign. The step-by-step usage is described below:  
+   1. Specify the location of the **ConvergencePlot.ipynb** file;  
+   2. Generate the script file **ConvergencePlot.py**;  
+      * The **ConvergencePlot.py** script implements the logic for data retrieval, considering the number of JOBs and the metrics (`fiberlength` and `capacity`).  
+   3. Run the **ConvergencePlot.py** script with the appropriate configurations:  
+      * `-j`: Number of JOBs to be plotted;  
+      * `-f`: Configuration file name;  
+      * `-p`: Path to the campaign results;  
+      * `-s`: Path where the convergence plots will be saved.  
+      ```bash
+      %run ConvergencePlot -j "20" -f "Placement_SaoPaulo_Case_1_2_cluster.yaml" -p '/home/oai-ufrn/Repositories/open_ran_datacenter_placement/Results/results_Placement_SaoPaulo_Case_1_2_cluster_odcs/' -s '/home/oai-ufrn/Repositories/open_ran_datacenter_placement/PlotResults/'
+      ```
 
-# Instructions
-
-1) Create the filtered dataset:
-
-Make sure you have the database from Anatel Website in the same folder as the pre-process script. In this repository, we have placed the datebases from both Natal and Manaus, cities from Brazil. For now, you should choose which dataset you want to create in the python script (located in CityData/), according with the command: 
-
-```
-$ python3 preprocess_anatel_city_csv.py <dataset> <output_filename_dataset>
-
-```
-
-After creating the dataset, you shoud follow the instructions below. 
-
-2) How to Reproduce Our Results:
-
-2.1) Open the Create_Campaigns.ipynb notebook and follow the instructions provided. If everything is set up correctly, you should see two directories created within the Campaigns/ folder: one for Natal and the other for Manaus.
-
-2.2) Navigate to one of the directories and run the following commands:
-
-```
-$ chmod +x Placement_<city>_Case_1_2_local_odcs_AllJOBS0.sh
-$ ./Placement_<city>_Case_1_2_local_odcs_AllJOBS0.sh
-
-```
-Currently, there are five shell scripts, each of which will execute 20 jobs. In total, 100 jobs will be run. If you'd like to adjust the number of jobs, return to Create_Campaigns.ipynb and modify the jobs and numberOfJobsShellScript parameters.
-
+### Results Plots:  
+   * TBA (To Be Announced)
 
 
