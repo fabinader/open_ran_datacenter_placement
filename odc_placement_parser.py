@@ -27,6 +27,9 @@ import os
 from sklearn.exceptions import ConvergenceWarning
 import re
 import warnings
+import osmnx as ox
+import networkx as nx
+from geopy.distance import geodesic
 
 
 # Set locale to ensure dot-separated decimal representation
@@ -42,6 +45,53 @@ def haversine_np(lat1, lon1, lat2, lon2):
     a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
     return R * c
+
+def manhattan_dist(G, lat1, lon1, lat2, lon2):
+    """
+    Calcula as distâncias viárias (e fallback geodésico) entre pares de coordenadas usando um grafo pré-carregado.
+
+    Args:
+        G: Grafo viário da cidade (rede OSMNx).
+        lat1, lon1: Listas de latitudes e longitudes das origens.
+        lat2, lon2: Listas de latitudes e longitudes dos destinos.
+
+    Returns:
+        np.array de distâncias em quilômetros.
+    """
+    distances = []
+    count = 0
+
+    for la1, lo1, la2, lo2 in zip(lat1, lon1, lat2, lon2):
+        print(f"Processando par {count}")
+        count += 1
+
+        try:
+            # Encontrar os nós mais próximos no grafo
+            orig_node = ox.distance.nearest_nodes(G, lo1, la1)
+            dest_node = ox.distance.nearest_nodes(G, lo2, la2)
+
+            # Tentar calcular o caminho mais curto
+            if nx.has_path(G, orig_node, dest_node):
+                route_length = nx.shortest_path_length(G, orig_node, dest_node, weight='length')
+                distancia_km = route_length / 1000  # Converter de metros para quilômetros
+            else:
+                print(f"Sem caminho entre os nós {orig_node} e {dest_node}. Usando distância geodésica.")
+                distancia_km = geodesic((la1, lo1), (la2, lo2)).km
+
+        except nx.NetworkXNoPath:
+            # Fallback para a distância geodésica
+            print(f"Erro: Sem caminho entre os nós. Usando distância geodésica.")
+            distancia_km = geodesic((la1, lo1), (la2, lo2)).km
+
+        except Exception as e:
+            # Capturar outros erros e retornar fallback
+            print(f"Erro inesperado: {e}. Usando distância geodésica.")
+            distancia_km = geodesic((la1, lo1), (la2, lo2)).km
+
+        # Adicionar a distância calculada à lista
+        distances.append(distancia_km)
+
+    return np.array(distances)
 
 # Function to extract bandwidth from ITU standard for radio emission designations
 def extract_bandwidth(designation):
@@ -221,7 +271,7 @@ class ODCPlacementProblem(Problem):
 
 
 # Plotting function with map and CDFs
-def plot_solution(clients, best_odcs, client_associations, capacities, max_distance, max_capacity, gen, num_trials):
+def plot_solution(G, clients, best_odcs, client_associations, capacities, max_distance, max_capacity, gen, num_trials):
     fig = plt.figure(figsize=(26, 10))
     gs = gridspec.GridSpec(5, 13, figure=fig)
 
@@ -291,7 +341,15 @@ def plot_solution(clients, best_odcs, client_associations, capacities, max_dista
     ax_cdf_orus.set_title('CDF of Number of O-RUs per ODC')
     ax_cdf_orus.grid(True)
 
-    individual_distances = haversine_np(client_lat_lon[:, 1], client_lat_lon[:, 0], np.array([odc[0] for _, odc in client_associations]), np.array([odc[1] for _, odc in client_associations]))
+    # individual_distances = haversine_np(client_lat_lon[:, 1], client_lat_lon[:, 0], np.array([odc[0] for _, odc in client_associations]), np.array([odc[1] for _, odc in client_associations]))
+    # individual_distances = manhattan_dist(client_lat_lon[:, 1], client_lat_lon[:, 0], np.array([odc[0] for _, odc in client_associations]), np.array([odc[1] for _, odc in client_associations]))
+    individual_distances = manhattan_dist(
+    G,
+    client_lat_lon[:, 1],
+    client_lat_lon[:, 0],
+    np.array([odc[0] for _, odc in client_associations]),
+    np.array([odc[1] for _, odc in client_associations])
+    )
     individual_distances_sorted = np.sort(individual_distances)
     cdf_distances = np.arange(1, len(individual_distances_sorted) + 1) / len(individual_distances_sorted)
     ax_cdf_distance.set_xlim(0, max_distance)
@@ -439,7 +497,7 @@ def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, d
     return capacities, client_associations,fiberlength
 
 # Example usage in the generate_frame function
-def generate_frame(gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances):
+def generate_frame(G, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances):
     selected_indices = [i for i, x in enumerate(solution) if x > 0.5]
     if not selected_indices:
         return None  # Skip if no ODCs are selected
@@ -452,7 +510,7 @@ def generate_frame(gen, num_trials, solution, clients, max_distance, max_capacit
     client_associations = [(client_id, odc) for client_id, odc in client_associations if odc in active_odcs]
 
     # Generate the plot
-    fig = plot_solution(clients, selected_odcs, client_associations, active_odcs, max_distance, max_capacity, gen, num_trials)
+    fig = plot_solution(G, clients, selected_odcs, client_associations, active_odcs, max_distance, max_capacity, gen, num_trials)
     
     # Convert the plot to an image frame
     fig.canvas.draw()
@@ -461,15 +519,22 @@ def generate_frame(gen, num_trials, solution, clients, max_distance, max_capacit
     
     return frame
 
-def precompute_distances(clients, initial_odcs):
+def precompute_distances(G, clients, initial_odcs):
     client_coords = np.array([(client["latitude"], client["longitude"]) for client in clients])
     odc_coords = np.array(initial_odcs)
     num_clients = len(clients)
     num_odcs = len(initial_odcs)
-    
+
     distances = np.zeros((num_clients, num_odcs))
     for i in range(num_clients):
-        distances[i, :] = haversine_np(
+        # distances[i, :] = haversine_np(
+        #     np.full(num_odcs, client_coords[i, 0]),
+        #     np.full(num_odcs, client_coords[i, 1]),
+        #     odc_coords[:, 0],
+        #     odc_coords[:, 1]
+        # )
+        distances[i, :] = manhattan_dist(
+            G,
             np.full(num_odcs, client_coords[i, 0]),
             np.full(num_odcs, client_coords[i, 1]),
             odc_coords[:, 0],
@@ -550,7 +615,10 @@ def main():
     print("     outputDir: ", outputDir)
     print("     city: ", city)
     print("########################")
-    
+
+    graph_name = f'{city}.graphml'
+    G = ox.load_graphml(graph_name)
+
     ## Set Parameters
     start_time = time.time()
 
@@ -569,7 +637,7 @@ def main():
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
     initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
-    distances = precompute_distances(clients, initial_odcs) # distances between ODC and O-RU locations based on haversine formula, where the the earth curvature is considered
+    distances = precompute_distances(G, clients, initial_odcs) # distances between ODC and O-RU locations based on haversine formula, where the the earth curvature is considered
   
     ## Create the Problem
     # the evaluate function works along with evaluate_trial function in the minimize method
@@ -608,7 +676,7 @@ def main():
     # Create a tqdm progress bar for GIF generation
     with tqdm(total=len(best_solutions_per_generation), desc="Generating GIF") as pbar:
         with ProcessPoolExecutor(max_workers=no_processes) as executor:
-            futures = [executor.submit(generate_frame, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances) for gen, solution in enumerate(best_solutions_per_generation)]
+            futures = [executor.submit(generate_frame, G, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances) for gen, solution in enumerate(best_solutions_per_generation)]
             for future in futures:
                 frame = future.result()
                 if frame is not None:  # Skip if no frame is generated
