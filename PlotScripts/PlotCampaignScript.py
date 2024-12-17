@@ -19,13 +19,13 @@ import pandas as pd
 import csv
 
 class openSimulation:
-    def __init__(self, configurations_file,plotpath):
+    def __init__(self, configurations_file, save_path, campaign_path):
         self.email_to = 'fulano@gmail.com'            
         self.doc = []
         self.campaign_name = []
         self.configurations_file=[]
         for iconfigurations_file in range(len(configurations_file)):
-            os.chdir(plotpath[iconfigurations_file])
+            os.chdir(campaign_path[iconfigurations_file])
             with open(configurations_file[iconfigurations_file], 'r') as f:
                 self.doc = np.append(self.doc,yaml.load(f, Loader=yaml.loader.BaseLoader))
                 self.campaign_name = np.append(self.campaign_name ,os.path.splitext(configurations_file[0])[0])
@@ -35,6 +35,7 @@ class openSimulation:
         self.commandScriptList = []
         self.script = []
         self.local_path = []
+        self.save_path = []
         self.campaign_path = []
         self.cluster_path = []
         self.outputDirName = []
@@ -55,7 +56,7 @@ class openSimulation:
         self.campaignLines = ['']*len(self.doc)
         self.nJobs = []
         for idoc in range (len(self.doc)):
-            os.chdir(plotpath[idoc])
+            os.chdir(campaign_path[idoc])
             self.commandScript = ''
             for iscenarioParameters in self.doc[idoc]['scenarioParameters'].items():
                 commandraw= " --"+str(iscenarioParameters[0])+"="+str(iscenarioParameters[1][0])
@@ -66,6 +67,7 @@ class openSimulation:
             self.script = np.append(self.script,str(self.doc[idoc]['ScriptParameters']['script']))
             self.local_path = np.append(self.local_path, str(self.doc[idoc]['ScriptParameters']['local_path']))
             self.campaign_path = np.append(self.campaign_path,os.getcwd())
+            self.save_path = np.append(save_path,save_path)
             
             #self.local_path = os.getcwd() + '/' + self.local_path
             self.cluster_path = np.append(self.cluster_path,str(self.doc[idoc]['ScriptParameters']['cluster_path']))
@@ -118,7 +120,8 @@ class openSimulation:
         ls_plotly_on = next(ls_plotly)
         iCampaignSim = 0 #counter of number of total curves, it should be len(doc)*len(self.doc[idoc]['scenarioParameters'][curLine]) 
         for idoc in range(len(doc)):    # for each campaing passed
-            outputDir = self.campaign_path[idoc]
+            resultsDir = self.campaign_path[idoc]
+            outputDir = self.save_path[idoc]
             njobs = min(jobs,self.nJobs[idoc])
             nOfCurlines=int(self.nOfCurlines[idoc]) # number of Campaign Lines in 1 simulation (max value = 3)
             SimTied = int(self.SimTied[idoc]) # whether or not the simulation parameters are tied (0 or 1)
@@ -191,21 +194,10 @@ class openSimulation:
                 for ilegend in range(len(self.doc[idoc]['scenarioParameters'][curLine])):
                     legendEntry = self.CampaignTag[idoc] + ": " + curLine + " " + curlineLegend[ilegend] + ", " + curLine1 + " " + curlineLegend1[ilegend] + ", " + curLine2 + " " + curlineLegend2[ilegend]
                     legend.append(legendEntry)
-                    #print('ilegend', ilegend)
-                    #print('curline', curline[ilegend])
                     for ilegendcdf in self.doc[idoc]['scenarioParameters'][campaignX]:
                         legendCdfEntry = legendEntry + "," + " " + campaignX + " " + ilegendcdf 
                         legendCdf.append(legendCdfEntry)
-                        #print('legendSimsEntry', legendSimsEntry)
-                '''
-                for ilegend in self.doc[idoc]['scenarioParameters'][curLine]:
-                    legendEntry = self.CampaignTag[idoc] + ": " + curLine + " " + ilegend
-                    legend.append(legendEntry) 
-                    for ilegendcdf in self.doc[idoc]['scenarioParameters'][campaignX]:
-                        legendCdfEntry = legendEntry + "," + " " + campaignX + " " + ilegendcdf 
-                        legendCdf.append(legendCdfEntry)
-                        legendEE.append(legendCdfEntry)
-                '''        
+    
                 #legend without CampaignTag        
                 for ilegend in self.doc[idoc]['scenarioParameters'][curLine]:
                     legendEntry = curLine + " " + ilegend
@@ -215,9 +207,7 @@ class openSimulation:
                         legendCdfWithoutCG.append(legendCdfEntry)        
                         
                 labelA = cycle(legend)
-                print('labelA', labelA)
                 labelAcdf = cycle(legendCdf)
-                print('labelACdf', labelAcdf)
                 labelAPC = cycle(legendEE)
                 
                 
@@ -233,7 +223,7 @@ class openSimulation:
                     nUes = 0
                     for iJob in range(0,njobs):
                         if metric.split('-')[0] == "Capacity":
-                            CurSimuFile = outputDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_capacities.csv"
+                            CurSimuFile = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_capacities.csv"
                             dfmetricA = pd.read_csv(CurSimuFile, usecols=['odc_locations', 'capacities'])
                             column = 'capacities'
                             dfmetric = pd.concat([dfmetric, dfmetricA], ignore_index=True)
@@ -241,7 +231,7 @@ class openSimulation:
                             xlabelcdf = "(CPUs/ODC)"
                             #print(CurSimuFile)
                         elif metric.split('-')[0] == 'Fiberlength':
-                            CurSimuFile = outputDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_fiberlength.csv"
+                            CurSimuFile = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_fiberlength.csv"
                             dfmetricA = pd.read_csv(CurSimuFile, usecols=['odc_locations', 'fiberlength'])
                             column = 'fiberlength'
                             dfmetric = pd.concat([dfmetric, dfmetricA], ignore_index=True)
@@ -325,10 +315,7 @@ class openSimulation:
                     f2_axes = plt.figure(figsize=(10,5))
                     metricTag = "_AllCurves" 
                     for i in range (df_metricCdf.shape[1]):
-                        if metric.split('-')[0] == 'US':
-                            resyData, resxData =np.histogram(df_metricCdf.iloc[:,i].dropna().astype(int),density=True,bins=bins)
-                        else:
-                            resyData, resxData =np.histogram(df_metricCdf.iloc[:,i].dropna(),density=True,bins=bins)
+                        resyData, resxData =np.histogram(df_metricCdf.iloc[:,i].dropna(),density=True,bins=bins)
                         cdf = np.cumsum(resyData*np.diff(resxData))
                         l, htput = st.t.interval(0.95, len(resyData), loc=np.mean(resyData), scale=st.sem(resyData))                        
                         #plt.plot(resxData[1:], cdf, label=labelcdf, marker=marker,color=color,markevery=markers_on,ls=linestyle_on)
@@ -367,101 +354,7 @@ class openSimulation:
                         xaxis_title=xlabelcdf,
                         yaxis_title=ylabel
                         )
-                    fig = go.Figure(data=datapktcdf, layout=layout)
-            
-        elif metric.split('-')[0] == "PCBar": ## bar plot (special case)
-            names = {0: UniqueStates[0]}
-            for istates in range(len(UniqueStates)):
-                names [istates] = UniqueStates[istates]
-            dfBarPlotFinal = dfBarPlotFinal.rename(names, axis=1)
-            dfBarPlotFinal=dfBarPlotFinal[['IDLE','RX_DATA','RX_DL_CTRL','TX']] # better order
-            ax = dfBarPlotFinal.plot.bar(stacked=True,rot=50,figsize=(18,15))
-            ax.set_ylim(ymin=0.40, ymax=1)
-            plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-            for container in ax.containers:
-                ax.bar_label(container)
-            fig = px.bar(dfBarPlotFinal,y=['IDLE','RX_DATA','RX_DL_CTRL','TX'],labels={"value": "State",  "variable": "State", 'index': 'Sim'})#, y=['IDLE','RX_DATA','RX_DL_CTRL','TX'],labels={"value": "State",  "variable": "State", 'index': 'Sim'})
-            fig.update_yaxes(range=[0.40,1])
-        elif metric.split('-')[0] == "PcPerStateBar": ## bar plot (special case)
-            names = {0: UniqueStates[0]}
-            for istates in range(len(UniqueStates)):
-                names [istates] = UniqueStates[istates]
-            dfBarPlotFinal = dfBarPlotFinal.rename(names, axis=1)
-            dfBarPlotFinal=dfBarPlotFinal[['IDLE','RX_DATA','RX_DL_CTRL','TX']] # better order
-            ax = dfBarPlotFinal.plot.bar(stacked=True,rot=50,figsize=(18,15))
-            #ax.set_ylim(ymin=0.40, ymax=1)
-            plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-            for container in ax.containers:
-                ax.bar_label(container)
-            fig = px.bar(dfBarPlotFinal,y=['IDLE','RX_DATA','RX_DL_CTRL','TX'],labels={"value": "State",  "variable": "State", 'index': 'Sim'})#, y=['IDLE','RX_DATA','RX_DL_CTRL','TX'],labels={"value": "State",  "variable": "State", 'index': 'Sim'})
-            #fig.update_yaxes(range=[0.40,1])
-        elif metric.split('-')[0] == "EEBar": ## bar plot (special case)
-            ax = dfBarPlotFinal.plot.bar(rot=50,legend=False,figsize=(18,15))
-            ax.set_ylabel("Energy Efficiency (kbps/J)")
-            for container in ax.containers:
-                ax.bar_label(container)
-            fig = px.bar(dfBarPlotFinal,labels={"value": "Energy Efficiency (kbps/J)",  "variable": "EE", 'index': 'Sim'})
-            fig.update_layout(showlegend=False)
-        elif metric.split('-')[0] == "EG": ## bar plot (special case)
-            print("dfBarPlotFinal.shape[0]", dfBarPlotFinal.shape[0])
-            print("dfBarPlotFinal[0:refEgGraph].shape[0]", dfBarPlotFinal[0:refEgGraph].shape[0])
-            repetitions = dfBarPlotFinal.shape[0]/dfBarPlotFinal[0:refEgGraph].shape[0]
-            dfreferenceValues = dfBarPlotFinal[0:refEgGraph]
-            dfReferenceValuesFinal = pd.DataFrame()
-            for repetitions in range(int(repetitions)):
-                dfReferenceValuesFinal = pd.concat([dfReferenceValuesFinal, dfreferenceValues])
-                
-            if dfBarPlotFinal.shape[0] == 1 and dfBarPlotFinal.shape[1] == 1:
-                dfReferenceValuesFinal = ((dfBarPlotFinal)/dfReferenceValuesFinal.values)*100
-            else:    
-                dfReferenceValuesFinal = ((dfBarPlotFinal - dfReferenceValuesFinal.values)/dfReferenceValuesFinal.values)*100 #%
-            
-            dfReferenceValuesFinal = dfReferenceValuesFinal.loc[(dfReferenceValuesFinal != 0).any(axis=1)] # drop zeros
-            ax = dfReferenceValuesFinal.plot.bar(rot=25,legend=False,figsize=(18,15))
-            ax.set_ylabel("Energy Gain (%) Compared to No Particioning Scenario")
-            for container in ax.containers:
-                ax.bar_label(container)
-            fig = px.bar(dfReferenceValuesFinal,labels={"value": "Energy Gain (%) Compared to No Particioning Scenario",  "variable": "EG", 'index': 'Sim'})
-            fig.update_layout(showlegend=False)
-        elif metric.split('-')[0] == "PieBwp": ## bar plot (special case)
-            #labels = ['Bwp 0','Bwp 1','Bwp 2','Bwp 3','Bwp 4','Bwp 5','Bwp 6','Bwp 7','Bwp 8','Bwp 9']
-            labels = []
-            dfMetricPieFinal = dfMetricPieFinal.fillna(0)
-            for ibwps in dfMetricPieFinal.index.values:
-                labels.append('Bwp '+str(ibwps))
-            #specs = [[{'type':'domain'}, {'type':'domain'}], [{'type':'domain'}, {'type':'domain'}]]
-            nspecs = []
-            for inCurlines in range(int(dfMetricPieFinal.shape[1]/nCurlines)):
-                nspecs.append({'type':'domain'})
-            
-            
-            specs=[]
-            for ispecs in range(nCurlines):
-                specs.append(nspecs)
-            
-            # Make figure and axes
-            figplt, axs = plt.subplots(rows, int(dfMetricPieFinal.shape[1]/nCurlines),figsize=(15, 15))
-            fig = make_subplots(rows=nCurlines, cols=int(dfMetricPieFinal.shape[1]/nCurlines), specs=specs,subplot_titles=legendCdfWithoutCG)
-            #fig = make_subplots(rows=nCurlines, cols=int(dfMetricPieFinal.shape[1]/nCurlines),subplot_titles=legendCdfWithoutCG)
-            
-            row=0
-            icount=0
-            for row in range(nCurlines):
-                for col in range(int(dfMetricPieFinal.shape[1]/nCurlines)):
-                    fig.add_trace(go.Pie(labels=labels, values=dfMetricPieFinal.iloc[:,icount]),row+1,col+1)
-                    if int(dfMetricPieFinal.shape[1]/nCurlines) == 1 and nCurlines == 1:
-                        axs.pie(dfMetricPieFinal.iloc[:,icount], labels=labels, autopct='%1.1f%%', shadow=True)
-                    elif int(dfMetricPieFinal.shape[1]/nCurlines) == 1 or nCurlines == 1:
-                        axs[row].pie(dfMetricPieFinal.iloc[:,icount], labels=labels, autopct='%1.1f%%', shadow=True)
-                    else: 
-                        axs[row, col].pie(dfMetricPieFinal.iloc[:,icount], labels=labels, autopct='%1.1f%%', shadow=True)
-                    icount += 1
-                    print(icount)
-            
-            
-            fig.update_layout(title_text=self.CampaignTag[idoc]  + ': Bwp Percentage')
-            figplt.suptitle(self.CampaignTag[idoc]  + ': Bwp Percentage')
-            
+                    fig = go.Figure(data=datapktcdf, layout=layout)    
         else:            
             if metric.split('-')[1] == "System":
                 # Confidence interval according to https://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
@@ -469,19 +362,6 @@ class openSimulation:
                 #plt.subplot(3, 1, 3)
                 ylabel="System " + ylabel
                 mm_metricplot = mm_metricSystem
-                print(mm_metricplot)
-            elif metric.split('-')[1] == "Bwp":
-                # Confidence interval according to https://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
-                plt.figure(figsize=(10, 5))
-                #plt.subplot(3, 1, 2)
-                ylabel="BWP " + ylabel
-                mm_metricplot = mm_metricBwp
-            elif metric.split('-')[1] == "IP":
-                # Confidence interval according to https://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
-                plt.figure(figsize=(10, 5))
-                #plt.subplot(3, 1, 3)
-                ylabel="IP " + ylabel
-                mm_metricplot = mm_metricIP
                 
             if bool(self.plotCI):                
                 for i in range (mm_metricplot.shape[0]):
@@ -562,7 +442,7 @@ class openSimulation:
             plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
             plt.grid()
             plt.tight_layout()
-            #plt.show()
+            #plt.show()dict(color=colors_list[:len(resxData)])
             
         
         
@@ -582,21 +462,16 @@ class openSimulation:
             commandTag = str(len(doc))
         else:
             commandTag = ''
-        
-        os.makedirs(outputDir+"/ps", exist_ok=True)
-        os.makedirs(outputDir+"/png", exist_ok=True)
-        os.makedirs(outputDir+"/html", exist_ok=True)
-        if bool(self.plotCI):
-            imgfilename = commandTag + metric + metricTag +'_CI_'+campaignX+'-rangeSimTime'+str(Ssimtime)+"-"+str(SsimtimeMax) 
-        elif len(metric.split('-')) > 2 and metric.split('-')[2] == "CDF":
+        os.makedirs(outputDir+campaign_path[idoc].split('/')[-2]+"/png", exist_ok=True)
+        os.makedirs(outputDir+campaign_path[idoc].split('/')[-2]+"/html", exist_ok=True)
+        if len(metric.split('-')) > 2 and metric.split('-')[2] == "CDF":
             imgfilename = commandTag + metric + metricTag +'_' +campaignX
         else:
             imgfilename = commandTag + metric +'_' +campaignX
         
-        plt.savefig(outputDir+"/png/"+imgfilename+".png")
-        plt.savefig(outputDir+"/ps/"+imgfilename+".eps")
+        plt.savefig(outputDir+campaign_path[idoc].split('/')[-2]+"/png/"+imgfilename+".png")
         if metricAggregated == 'All':
-            pio.write_html(fig, file=outputDir+"/html/"+imgfilename+'.html', auto_open=True)
+            pio.write_html(fig, file=outputDir+campaign_path[idoc].split('/')[-2]+"/html/"+imgfilename+'.html', auto_open=True)
         if bool(self.showPlot):
             plt.show()
             if metricAggregated == 'All':
@@ -605,15 +480,15 @@ class openSimulation:
             plt.close()
             
         ## Saving data into .csv file
-        os.makedirs(outputDir+"/data", exist_ok=True)
+        os.makedirs(outputDir+campaign_path[idoc].split('/')[-2]+"/data", exist_ok=True)
         if len(metric.split('-')) > 2:
             df_metricCdf.columns = legendCdf
-            df_metricCdf.to_csv(outputDir+"/data/"+commandTag+ylabel+".csv")
+            df_metricCdf.to_csv(outputDir+campaign_path[idoc].split('/')[-2]+"/data/"+commandTag+ylabel+".csv")
         else:
             df_metric=pd.DataFrame(mm_metricplot,index=legend)
             dfResxData=pd.DataFrame(resxData,columns=['x']).transpose()
             df_metric=pd.concat([df_metric,dfResxData])
-            df_metric.to_csv(outputDir+"/data/"+metric+".csv")
+            df_metric.to_csv(outputDir+campaign_path[idoc].split('/')[-2]+"/data/"+metric+".csv")
             #np.savetxt(outputDir+"/data/"+ylabel+".csv", mm_metricplot, delimiter=",")
 
 parser = argparse.ArgumentParser()
@@ -624,7 +499,8 @@ parser.add_argument("-j", "--jobs", type=str, help='The script will ignore the v
 parser.add_argument("-m", "--metricAggregated", type=str, default='All' ,help='Metric that will be used to aggregate the curves; Curline or Campaign or CampaignX or All')
 parser.add_argument("-l", "--layerGraphs", type=str, default='PHY',help='Layer from which the results will be plotted; PHY or IP or ALL')
 parser.add_argument("-t", "--typeGraphs", type=str, default='mean',help='Type of graph: mean, CDF or ALL')
-parser.add_argument("-p", "--path", type=str, nargs='+', help='Path')
+parser.add_argument("-p", "--campaign_path", type=str, nargs='+', help='Path')
+parser.add_argument("-sp", "--save_path", type=str, nargs='+', help='Save Path')
 #parser.add_argument("-p", "--path", type=str, help='Path')
 #parser.add_argument("-s", "--simtime", type=str, help='Value script will use as start to to plot figures in "s"')
 #parser.add_argument("-sm", "--simtimeMax", type=str,default='100',help='Value script will use as end to plot figures in "s"')
@@ -634,7 +510,8 @@ configurations_file = args.file
 graph= args.graphs
 jobs = int(args.jobs)
 metricAggregated = args.metricAggregated
-plotpath = args.path
+campaign_path = args.campaign_path
+save_path = args.save_path
 #Ssimtime = int(args.simtime) 
 #SsimtimeMax = int(args.simtimeMax) 
 lgraphs = args.layerGraphs
@@ -663,7 +540,7 @@ if lgraphs == 'MACRO':
 
 doc=[]
 for iconfigurations_file in range(len(configurations_file)):
-    os.chdir(plotpath[iconfigurations_file])
+    os.chdir(campaign_path[iconfigurations_file])
     with open(configurations_file[iconfigurations_file], 'r') as f:
         doc = np.append(doc,yaml.load(f, Loader=yaml.loader.BaseLoader))
         campaign_name = os.path.splitext(configurations_file[iconfigurations_file])[0] 
@@ -673,16 +550,12 @@ campaign = []
 for idoc in range(len(doc)):
     campaign = np.append(campaign,doc[idoc]['campaignLines']['campaignX'])
 
-#print ("Yaml: ")
-#print(doc[0])
-#os.chdir(plotpath[0])
-#simu = openSimulation(configurations_file[0])
 print("No. of Campaign to plot: ",len(doc))
 print("Campaign: ", campaign)
 print("Kind of Graph: ", metricAggregated)
 
 for iMet in finalMetrics:
     print("Graph: ",iMet)
-    simu = openSimulation(configurations_file,plotpath)
+    simu = openSimulation(configurations_file, save_path, campaign_path)
     simu.plotCampaign(iMet,jobs,metricAggregated,lgraphs)#,fig1,fig2,fig3,fig4)
     #campaign = doc[idoc]['campaignLines']['campaignX'] 
