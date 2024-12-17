@@ -111,11 +111,8 @@ The next two steps are exemplified for each city addressed in the study.
    %run Create_Campaigns -f "Placement_SaoPaulo_Case_1_2_cluster.yaml"
    ```
 7. Open a terminal in the campaign directory created and run the following command lines:
-
    ```
    $ chmod +x CampaingName_AllJOBS0.sh
    $ ./CampaingName_AllJOBS0.sh
-
    ```
-   
    Then, repeat this process for all .sh files.
