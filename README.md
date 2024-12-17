@@ -1,32 +1,27 @@
-# open_ran_datacenter_placement
-Open RAN Datacente Placement
+# open_ran_datacenter_placement  
+**Open RAN Datacenter Placement**  
 
+## Authors  
 
-# Instructions
+- Daniel Rodrigues de Luna;  
+- Francisco Hugo Costa Neto;  
+- Fuad Mousse Abinader Junior;
+- Michel Bernardo de Paiva;    
+- Paulo Ricardo Branco da Silva;  
+- Ricardo Queiroz de Farias Henrique Silva;  
+- Vicente Angelo de Sousa Junior.
+  
+## How to Reproduce Our Results  
 
-1) Create the filtered dataset:
+Below are the steps that must be followed to reproduce the results associated with this tool. Each folder contains a `README.md` file with explanations on how to use its contents:  
 
-Make sure you have the database from Anatel Website in the same folder as the pre-process script. In this repository, we have placed the datebases from both Natal and Manaus, cities from Brazil. For now, you should choose which dataset you want to create in the python script (located in CityData/), according with the command: 
+1. Preprocessing the study city data: [CityData](https://github.com/fabinader/open_ran_datacenter_placement/tree/test-campaigns-plots/CityData);  
+2. Creating the simulation campaign: [Campaigns](https://github.com/fabinader/open_ran_datacenter_placement/tree/test-campaigns-plots/Campaigns);  
+3. Plotting the results: [PlotScripts](https://github.com/fabinader/open_ran_datacenter_placement/tree/test-campaigns-plots/PlotScripts).  
 
-```
-$ python3 preprocess_anatel_city_csv.py <dataset> <output_filename_dataset>
+The file `odc_placement_parser.py` is the simulation algorithm and must always remain in the repository's root folder.  
 
-```
+## Cite Us  
 
-After creating the dataset, you shoud follow the instructions below. 
-
-2) How to Reproduce Our Results:
-
-2.1) Open the Create_Campaigns.ipynb notebook and follow the instructions provided. If everything is set up correctly, you should see two directories created within the Campaigns/ folder: one for Natal and the other for Manaus.
-
-2.2) Navigate to one of the directories and run the following commands:
-
-```
-$ chmod +x Placement_<city>_Case_1_2_local_odcs_AllJOBS0.sh
-$ ./Placement_<city>_Case_1_2_local_odcs_AllJOBS0.sh
-
-```
-Currently, there are five shell scripts, each of which will execute 20 jobs. In total, 100 jobs will be run. If you'd like to adjust the number of jobs, return to Create_Campaigns.ipynb and modify the jobs and numberOfJobsShellScript parameters.
-
-
-
+When using, even partially, any content or methodology from this repository, please cite the following work:  
+- [Multi-Objective Optimization of Open RAN Data Center Placement for Enhanced 5G Deployments]().  
