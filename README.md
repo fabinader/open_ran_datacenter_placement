@@ -24,10 +24,3 @@ The file `odc_placement_parser.py` is the simulation algorithm and must always r
 
 When using, even partially, any content or methodology from this repository, please cite the following work:  
 - [Multi-Objective Optimization of Open RAN Data Center Placement for Enhanced 5G Deployments]().  
-
-The file `odc_placement_parser.py` is the simulation algorithm and must always remain in the repository's root folder.  
-
-## Cite Us  
-
-When using, even partially, any content or methodology from this repository, please cite the following work:  
-- [Multi-Objective Optimization of Open RAN Data Center Placement for Enhanced 5G Deployments]().  
