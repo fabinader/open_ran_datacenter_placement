@@ -245,6 +245,7 @@ class openSimulation:
                         vtMetricMeanSystem = np.append(vtMetricMeanSystem,MetricMean)
                         vtMetricMeanSystem = vtMetricMeanSystem[~np.isnan(vtMetricMeanSystem)]
                         dfMetricMeanSystem = pd.DataFrame(vtMetricMeanSystem)
+                        #print(vtMetricMeanSystem)
                         
                         if len(metric.split('-')) <= 2:
                             mm_metricSystem[iCampaignSim,iCampaignX] = np.mean(vtMetricMeanSystem) # Mean of Metrics
@@ -314,6 +315,7 @@ class openSimulation:
                     #figCdfTput, f2_axes = plt.subplots(ncols=1, nrows=int(np.ceil(df_metricCdf.shape[1]/4)), constrained_layout=True,figsize=(10,5))
                     f2_axes = plt.figure(figsize=(10,5))
                     metricTag = "_AllCurves" 
+                    #print(df_metricCdf)
                     for i in range (df_metricCdf.shape[1]):
                         resyData, resxData =np.histogram(df_metricCdf.iloc[:,i].dropna(),density=True,bins=bins)
                         cdf = np.cumsum(resyData*np.diff(resxData))
