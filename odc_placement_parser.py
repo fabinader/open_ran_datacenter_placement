@@ -480,6 +480,7 @@ def plot_results2(res, initial_odcs, clients, trial,output_directory):
 def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs):
     capacities = {odc: 0 for odc in selected_odcs}
     fiberlength = {odc: 0 for odc in selected_odcs}
+    fiberlength_clients = {}
     client_associations = []
     odc_indices = [i for i, odc in enumerate(initial_odcs) if odc in selected_odcs]
     #print(len(selected_odcs))
@@ -493,8 +494,9 @@ def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, d
             capacities[closest_odc] += client["cpu_cores"]
             client_associations.append((client["oru_id"], closest_odc))
             fiberlength[closest_odc] += selected_distances[closest_odc_idx]
+            fiberlength_clients[client["oru_id"]] = selected_distances[closest_odc_idx]
 
-    return capacities, client_associations,fiberlength
+    return capacities, client_associations,fiberlength, fiberlength_clients
 
 # Example usage in the generate_frame function
 def generate_frame(G, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances):
@@ -504,7 +506,7 @@ def generate_frame(G, gen, num_trials, solution, clients, max_distance, max_capa
     selected_odcs = [initial_odcs[i] for i in selected_indices]
     #print(selected_indices)
 
-    capacities, client_associations,_ = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
+    capacities, client_associations,_,_ = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
     active_odcs = {odc: capacity for odc, capacity in capacities.items() if capacity > 0}
     selected_odcs = [odc for odc in selected_odcs if odc in active_odcs]
     client_associations = [(client_id, odc) for client_id, odc in client_associations if odc in active_odcs]
@@ -569,18 +571,18 @@ class BestSolutionTracker:
 def main():
     parser = argparse.ArgumentParser()
     #problem parameters
-    parser.add_argument("-c", "--cpuper100", type=str,default='16',help='cpus per 100MHz')
-    parser.add_argument("-d", "--maxdistance", type=str, default='3', help='Max distance')
-    parser.add_argument("-cp", "--capacity", type=str,default='2560', help='Max capacity')
+    parser.add_argument("-c", "--cpuper100", type=str,default='14',help='cpus per 100MHz')
+    parser.add_argument("-d", "--maxdistance", type=str, default='11', help='Max distance')
+    parser.add_argument("-cp", "--capacity", type=str,default='1000', help='Max capacity')
     parser.add_argument("-o", "--odcs", type=str, default='0',help='No. of Initial ODCs')
     #GA parameters
     parser.add_argument("-t", "--trials", type=str, default='60',help='no. of trials"')
     parser.add_argument("-pop", "--population", type=str, default='300',help='Population Size')
     parser.add_argument("-p", "--process", type=str, default='8' ,help='No. of Process')    
     # sum of weights must be 1
-    parser.add_argument("-wcpu", "--wcpu", type=str, default='0',help='Weight of CPUs per ODC')
-    parser.add_argument("-wodc", "--wodc", type=str, default='0', help='Weight of no. of ODCs')
-    parser.add_argument("-wd", "--wd", type=str, default='1',help='Weight of ORU-ODC distance')    
+    parser.add_argument("-wcpu", "--wcpu", type=str, default='0.33',help='Weight of CPUs per ODC')
+    parser.add_argument("-wodc", "--wodc", type=str, default='0.33', help='Weight of no. of ODCs')
+    parser.add_argument("-wd", "--wd", type=str, default='0.34',help='Weight of ORU-ODC distance')    
     #Sim parameters
     parser.add_argument("-s", "--seed", type=str, default='1',help='Random State Seed')
     parser.add_argument("-opd", "--outputDir", type=str, default='/home/ubuntu/',help='Full path where the results will be saved')
@@ -728,7 +730,7 @@ def main():
     selected_indices = [i for i, x in enumerate(best_solution) if x > 0.5] #solution vector has values between 0 and 1, 0.5 seems to be a intermediate standard value for this problem
     selected_odcs = [initial_odcs[i] for i in selected_indices]
 
-    capacities, client_associations,fiberlength = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
+    capacities, client_associations,fiberlength, fiberlength_clients = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
     #active_odcs = {odc: capacity for odc, capacity in capacities.items() if capacity > 0}
     active_odcs = {
         odc: {'capacity': capacity, 'fiberlength': fiberlength[odc]}
@@ -752,10 +754,12 @@ def main():
     df_client_association = pd.DataFrame(client_associations,columns=['oru','odc_location'])
     df_capacities = pd.DataFrame(capacities.items(),columns=['odc_locations','capacities'])
     df_fiberlength = pd.DataFrame(fiberlength.items(),columns=['odc_locations','fiberlength'])
+    df_fiberlength_clients = pd.DataFrame(fiberlength_clients.items(), columns=['oru','fiberlength'])
 
     df_client_association.to_csv(outputDir+"/"+"df_client_association"+".csv")
     df_capacities.to_csv(outputDir+"/"+"df_capacities"+".csv")
     df_fiberlength.to_csv(outputDir+"/"+"df_fiberlength"+".csv")
+    df_fiberlength_clients.to_csv(outputDir+"/"+"df_fiberlength_clients"+".csv")
 
     imageio.mimsave(outputDir+"/"+'optimization_process.gif', frames, fps=2)
 
