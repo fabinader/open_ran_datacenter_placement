@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Oct  2 16:03:59 2019
-
-@author: daniel
-"""
 
 import numpy as np
 import pandas as pd
@@ -271,11 +266,7 @@ class openSimulation:
                 for ilegendcdf in self.doc['scenarioParameters'][campaignX]:
                     legendSimsEntry = legendEntry + "," + " " + campaignX + " " + ilegendcdf 
                     legendSims.append(legendSimsEntry)
-        
-        
-        #//////////////////////////////////////////////////////////////////////////////////////////
-        #//////////////////////////////////////////////////////////////////////////////////////////
-        
+
         elif nOfCurlines==3 and SimTied == 1 and nOfCurlinesTied == 3:
             legend = []
             legendSims = []
@@ -347,7 +338,6 @@ class openSimulation:
 
         ##### START OF PLOTTING SECTION ####         
 
-        
         #labelA = cycle(legend)
         labelAsims = cycle(legendSims) 
         #label = next(labelA)
