@@ -65,7 +65,7 @@ class Simulation:
                 for iJob in range(iCallScripts*numberOfJobsShellScript,iCallScripts*numberOfJobsShellScript + numberOfJobsShellScript):
                     for iSim in range(0, int(self.ntasks)):
                         sh_name = "run_"+self.campaign_name + '_' + self.simLocation + '_' + curCampaign + '_JOB' + str(iJob) + '_Sim_' + str(iSim)
-                        if self.simLocation == 'cluster' or self.simLocation == 'service' or self.simLocation == 'intel-512' or self.simLocation == 'intel-256':
+                        if self.simLocation == 'cluster' or self.simLocation == 'service' or self.simLocation == 'intel-512' or self.simLocation == 'intel-256' or self.simLocation == 'intel-128' or self.simLocation == 'amd-3tb' or self.simLocation == 'amd-512':
                             f.write("sbatch -p " + self.simLocation + " " + sh_name + ".sh" + "\n")
                         else:
                             f.write("chmod +x " + sh_name + ".sh" + " & wait\n")
@@ -333,7 +333,7 @@ class Simulation:
                         print(curCampaign+" campaign written in file: " 'run_%s.sh' % sh_name)
                         with open('run_%s.sh' % sh_name, 'w') as f:
                             f.write('#!/bin/bash\n')
-                            if self.simLocation == 'cluster' or self.simLocation == 'service' or self.simLocation == 'intel-512' or self.simLocation == 'intel-256':
+                            if self.simLocation == 'cluster' or self.simLocation == 'service' or self.simLocation == 'intel-512' or self.simLocation == 'intel-256' or self.simLocation == 'intel-128' or self.simLocation == 'amd-3tb' or self.simLocation == 'amd-512':
                                 outputDir = self.cluster_path +'results_'+ self.campaign_name + '_' + curCampaign
                                 f.write('#SBATCH --time='+self.daytime+'-'+self.htime+':0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos\n')
                                 f.write('#SBATCH --ntasks=1\n')
