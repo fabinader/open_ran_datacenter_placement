@@ -101,13 +101,13 @@ def read_clients(file_path, cpu_per_100mhz):
     return clients
 
 # Generate initial ODC locations using KMeans
-def generate_initial_odcs(clients, num_initial_odcs):
+def generate_initial_odcs(clients, num_initial_odcs, seed):
     distinct_clusters = 0
     n_clusters = 0
     lat_lon = np.array([[c["latitude"], c["longitude"]] for c in clients])
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", ConvergenceWarning)
-        kmeans = KMeans(n_clusters=num_initial_odcs, random_state=0).fit(lat_lon)
+        kmeans = KMeans(n_clusters=num_initial_odcs, random_state=seed).fit(lat_lon)
         initial_odcs = kmeans.cluster_centers_
         # Check if a ConvergenceWarning was raised
         if w and issubclass(w[-1].category, ConvergenceWarning):
@@ -122,7 +122,7 @@ def generate_initial_odcs(clients, num_initial_odcs):
                 n_clusters = int(numbers[1])
                 print(f"Number of distinct clusters: {distinct_clusters}")
                 print(f"n_clusters: {n_clusters}")
-                kmeans = KMeans(n_clusters=distinct_clusters, random_state=0).fit(lat_lon)
+                kmeans = KMeans(n_clusters=distinct_clusters, random_state=seed).fit(lat_lon)
                 initial_odcs = kmeans.cluster_centers_
                 
                 
@@ -570,7 +570,7 @@ def main():
     clients = read_clients(dataset, cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
-    initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
+    initial_odcs= generate_initial_odcs(clients, num_initial_odcs, seed) #get initial locations (lat, lon) of ODCs, based on kmeans 
     distances = precompute_distances(clients, initial_odcs) # distances between ODC and O-RU locations based on haversine formula, where the the earth curvature is considered
   
     ## Create the Problem

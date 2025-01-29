@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH --time=0-1:0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=4
+#SBATCH --qos=preempt
 mkdir -p /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs/JOB90/Sim_1
 cp -f run_Placement_Curitiba_Conference_Paper_amd-3tb_odcs_JOB90_Sim_1.sh /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs
 cp -f Placement_Curitiba_Conference_Paper.yaml /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs

@@ -34,9 +34,10 @@ ShellScriptParameters:
     nOfCurlinesTied: 3  # If greater than nOfCurlines, means that campaignX is included 
     daytime: 0          # Number of days to simulate (only for cluster simulation)  
     htime: 1            # Number of hours to simulate (only for cluster simulation) 
-    ntasks: 44           # Number of simulation in one job (IMPORTANT)
-    cpusPerTask: 16     # Numer of CPUs per Task
-    numberOfJobsShellScript: 2
+    ntasks: 8           # Number of simulation in one job (IMPORTANT)
+    cpusPerTask: 4      # Numer of CPUs per Task
+    qos: preempt        # qos1 (defalt), qos2 (limited) or preempt     
+    numberOfJobsShellScript: 10
 
 #Lines/curves
 campaignLines:
@@ -71,40 +72,13 @@ scenarioParameters:
         - 8
     wcpu:
         - 0
-        - 0.1
-        - 0.2
-        - 0.3
-        - 0.4
-        - 0.5
-        - 0.6
-        - 0.7
-        - 0.8
-        - 0.9
+
         - 1
     wodc:
         - 0
         - 0
-        - 0
-        - 0
-        - 0
-        - 0
-        - 0
-        - 0
-        - 0
-        - 0
-        - 0
-        - 0
     wd:
         - 1
-        - 0.9
-        - 0.8
-        - 0.7
-        - 0.6
-        - 0.5
-        - 0.4
-        - 0.3
-        - 0.2
-        - 0.1
         - 0
     csv: # Path of the csv file used in the simulation
         - /home/rqdfhsilva/CPQD/CityData/Curitiba.csv

@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH --time=0-1:0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=4
+#SBATCH --qos=preempt
 mkdir -p /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs/JOB67/Sim_6
 cp -f run_Placement_Curitiba_Conference_Paper_amd-3tb_odcs_JOB67_Sim_6.sh /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs
 cp -f Placement_Curitiba_Conference_Paper.yaml /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs
@@ -9,4 +10,4 @@ cd '/home/rqdfhsilva/CPQD/'
 sleep $((11 + RANDOM % 50))
 eval "$(conda shell.bash hook)"
 conda activate cpqd
-python3 odc_placement_parser.py --outputDir=/home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs/JOB67/Sim_6 --seed=2165824663 --cpuper100=14 --maxdistance=11 --capacity=1000 --odcs=0 --trials=60 --population=300 --process=8 --wcpu=0 --wodc=0 --wd=1 --csv=/home/rqdfhsilva/CPQD/CityData/Curitiba.csv --wcpu=0.1 --wodc=0 --wd=0.9 --odcs=76 > /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs/JOB67/Sim_6.out 2>&1
+python3 odc_placement_parser.py --outputDir=/home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs/JOB67/Sim_6 --seed=2165824663 --cpuper100=14 --maxdistance=11 --capacity=1000 --odcs=0 --trials=60 --population=300 --process=8 --wcpu=0 --wodc=0 --wd=1 --csv=/home/rqdfhsilva/CPQD/CityData/Curitiba.csv --wcpu=1 --wodc=0 --wd=0 --odcs=76 > /home/rqdfhsilva/CPQD/results_Placement_Curitiba_Conference_Paper_odcs/JOB67/Sim_6.out 2>&1

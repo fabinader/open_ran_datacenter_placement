@@ -41,6 +41,7 @@ class Simulation:
         self.htime  = self.doc['ShellScriptParameters']['htime']
         self.ntasks = self.doc['ShellScriptParameters']['ntasks']
         self.cpusPerTask = self.doc['ShellScriptParameters']['cpusPerTask']
+        self.qos = self.doc['ShellScriptParameters']['qos']
         self.numberOfJobsShellScript = int(self.doc['ShellScriptParameters']['numberOfJobsShellScript'])
         
          #Lines/curves
@@ -338,6 +339,7 @@ class Simulation:
                                 f.write('#SBATCH --time='+self.daytime+'-'+self.htime+':0 #especifica o tempo máximo de execução do job, dado no padrão dias-horas:minutos\n')
                                 f.write('#SBATCH --ntasks=1\n')
                                 f.write('#SBATCH --cpus-per-task='+self.cpusPerTask+'\n')
+                                f.write('#SBATCH --qos='+self.qos+'\n')
                                 command1 = (
                                 "python3 " + self.script +
                                 " --"+self.outputDirName+"="+outputDir+"/JOB"+str(iJob)+'/Sim_' + str(count) +
