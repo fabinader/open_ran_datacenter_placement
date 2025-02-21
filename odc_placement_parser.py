@@ -27,9 +27,7 @@ import os
 from sklearn.exceptions import ConvergenceWarning
 import re
 import warnings
-import osmnx as ox
-import networkx as nx
-from geopy.distance import geodesic
+
 
 
 # Set locale to ensure dot-separated decimal representation
@@ -46,53 +44,6 @@ def haversine_np(lat1, lon1, lat2, lon2):
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
     return R * c
 
-def manhattan_dist(G, lat1, lon1, lat2, lon2):
-    """
-    Calcula as distâncias viárias (e fallback geodésico) entre pares de coordenadas usando um grafo pré-carregado.
-
-    Args:
-        G: Grafo viário da cidade (rede OSMNx).
-        lat1, lon1: Listas de latitudes e longitudes das origens.
-        lat2, lon2: Listas de latitudes e longitudes dos destinos.
-
-    Returns:
-        np.array de distâncias em quilômetros.
-    """
-    distances = []
-    count = 0
-
-    for la1, lo1, la2, lo2 in zip(lat1, lon1, lat2, lon2):
-        print(f"Processando par {count}")
-        count += 1
-
-        try:
-            # Encontrar os nós mais próximos no grafo
-            orig_node = ox.distance.nearest_nodes(G, lo1, la1)
-            dest_node = ox.distance.nearest_nodes(G, lo2, la2)
-
-            # Tentar calcular o caminho mais curto
-            if nx.has_path(G, orig_node, dest_node):
-                route_length = nx.shortest_path_length(G, orig_node, dest_node, weight='length')
-                distancia_km = route_length / 1000  # Converter de metros para quilômetros
-            else:
-                print(f"Sem caminho entre os nós {orig_node} e {dest_node}. Usando distância geodésica.")
-                distancia_km = geodesic((la1, lo1), (la2, lo2)).km
-
-        except nx.NetworkXNoPath:
-            # Fallback para a distância geodésica
-            print(f"Erro: Sem caminho entre os nós. Usando distância geodésica.")
-            distancia_km = geodesic((la1, lo1), (la2, lo2)).km
-
-        except Exception as e:
-            # Capturar outros erros e retornar fallback
-            print(f"Erro inesperado: {e}. Usando distância geodésica.")
-            distancia_km = geodesic((la1, lo1), (la2, lo2)).km
-
-        # Adicionar a distância calculada à lista
-        distances.append(distancia_km)
-
-    return np.array(distances)
-
 # Function to extract bandwidth from ITU standard for radio emission designations
 def extract_bandwidth(designation):
     unit_dict = {
@@ -101,13 +52,13 @@ def extract_bandwidth(designation):
         'M': 1,       # Megahertz to Megahertz
         'G': 1e3      # Gigahertz to Megahertz
     }
-
+    
     for i, char in enumerate(designation):
         if char in unit_dict:
             numeric_part = designation[:i]
             unit = char
             break
-
+    
     bandwidth_mhz = float(numeric_part) * unit_dict[unit]
     return bandwidth_mhz
 
@@ -121,7 +72,6 @@ def read_clients(file_path, cpu_per_100mhz):
         'latitude': locale.atof,
         'longitude': locale.atof
     })
-
     clients = []
     for index, row in df.iterrows():
         bandwidth_mhz = extract_bandwidth(row['emission_designation'])
@@ -151,22 +101,20 @@ def read_clients(file_path, cpu_per_100mhz):
     return clients
 
 # Generate initial ODC locations using KMeans
-def generate_initial_odcs(clients, num_initial_odcs):
+def generate_initial_odcs(clients, num_initial_odcs, seed):
     distinct_clusters = 0
     n_clusters = 0
     lat_lon = np.array([[c["latitude"], c["longitude"]] for c in clients])
-
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", ConvergenceWarning)
-        kmeans = KMeans(n_clusters=num_initial_odcs, random_state=0).fit(lat_lon)
+        kmeans = KMeans(n_clusters=num_initial_odcs, random_state=seed).fit(lat_lon)
         initial_odcs = kmeans.cluster_centers_
-
         # Check if a ConvergenceWarning was raised
         if w and issubclass(w[-1].category, ConvergenceWarning):
             warning_message = str(w[-1].message)
             print("ConvergenceWarning was raised")
             print(warning_message)
-
+            
             # Extract numbers from the warning message using regex
             numbers = re.findall(r'\d+', warning_message)
             if len(numbers) >= 2:
@@ -174,8 +122,10 @@ def generate_initial_odcs(clients, num_initial_odcs):
                 n_clusters = int(numbers[1])
                 print(f"Number of distinct clusters: {distinct_clusters}")
                 print(f"n_clusters: {n_clusters}")
-                kmeans = KMeans(n_clusters=distinct_clusters, random_state=0).fit(lat_lon)
+                kmeans = KMeans(n_clusters=distinct_clusters, random_state=seed).fit(lat_lon)
                 initial_odcs = kmeans.cluster_centers_
+                
+                
             else:
                 print("Could not extract the required numbers from the warning message.")
         else:
@@ -213,7 +163,6 @@ def evaluate_trial(i, X, clients, initial_odcs, max_distance, max_capacity, dist
 
     return (constraint0, constraint1, total_capacity, num_active_odc, avg_distance)
 
-
 class ODCPlacementProblem(Problem):
     def __init__(self, clients, initial_odcs, max_distance, max_capacity, cpu_per_100mhz, no_processes, distances, obj_weights):
         self.clients = clients
@@ -232,6 +181,7 @@ class ODCPlacementProblem(Problem):
             xu=1
         )
 
+    
     def _evaluate(self, X, out, *args, **kwargs):
         n_trials = X.shape[0]
         num_clients = len(self.clients)
@@ -269,9 +219,8 @@ class ODCPlacementProblem(Problem):
         out["F"] = np.column_stack([weighted_total_capacity, weighted_num_active_odcs, weighted_avg_distances])
         out["G"] = constraints
 
-
 # Plotting function with map and CDFs
-def plot_solution(G, clients, best_odcs, client_associations, capacities, max_distance, max_capacity, gen, num_trials):
+def plot_solution(clients, best_odcs, client_associations, capacities, max_distance, max_capacity, gen, num_trials):
     fig = plt.figure(figsize=(26, 10))
     gs = gridspec.GridSpec(5, 13, figure=fig)
 
@@ -341,15 +290,7 @@ def plot_solution(G, clients, best_odcs, client_associations, capacities, max_di
     ax_cdf_orus.set_title('CDF of Number of O-RUs per ODC')
     ax_cdf_orus.grid(True)
 
-    # individual_distances = haversine_np(client_lat_lon[:, 1], client_lat_lon[:, 0], np.array([odc[0] for _, odc in client_associations]), np.array([odc[1] for _, odc in client_associations]))
-    # individual_distances = manhattan_dist(client_lat_lon[:, 1], client_lat_lon[:, 0], np.array([odc[0] for _, odc in client_associations]), np.array([odc[1] for _, odc in client_associations]))
-    individual_distances = manhattan_dist(
-    G,
-    client_lat_lon[:, 1],
-    client_lat_lon[:, 0],
-    np.array([odc[0] for _, odc in client_associations]),
-    np.array([odc[1] for _, odc in client_associations])
-    )
+    individual_distances = haversine_np(client_lat_lon[:, 1], client_lat_lon[:, 0], np.array([odc[0] for _, odc in client_associations]), np.array([odc[1] for _, odc in client_associations]))
     individual_distances_sorted = np.sort(individual_distances)
     cdf_distances = np.arange(1, len(individual_distances_sorted) + 1) / len(individual_distances_sorted)
     ax_cdf_distance.set_xlim(0, max_distance)
@@ -362,6 +303,7 @@ def plot_solution(G, clients, best_odcs, client_associations, capacities, max_di
 
     fig.tight_layout()
     return fig
+
 
 def plot_results(res, initial_odcs, clients, trial, output_directory):
     plt.figure(figsize=(12, 8))
@@ -433,7 +375,10 @@ def plot_results2(res, initial_odcs, clients, trial,output_directory):
     ax_map.scatter(longitudes, latitudes, c='blue', label='Clients')
 
     # Extract selected ODCs
-    selected_odcs = [initial_odcs[i] for i in range(len(initial_odcs)) if res.X[trial, i] > 0.5]
+    if res.X is None:
+        selected_odcs = initial_odcs
+    else:
+        selected_odcs = [initial_odcs[i] for i in range(len(initial_odcs)) if res.X[trial, i] > 0.5]
     odc_latitudes = [odc[0] for odc in selected_odcs]
     odc_longitudes = [odc[1] for odc in selected_odcs]
     ax_map.scatter(odc_longitudes, odc_latitudes, c='red', marker='x', label='Selected ODCs')
@@ -476,11 +421,9 @@ def plot_results2(res, initial_odcs, clients, trial,output_directory):
     output_file = os.path.join(output_directory, f'odc_placement_results_trial_{trial}.png')
     plt.savefig(output_file, dpi=300)  # Save the figure as PNG
     plt.close()
-
 def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs):
     capacities = {odc: 0 for odc in selected_odcs}
     fiberlength = {odc: 0 for odc in selected_odcs}
-    fiberlength_clients = {}
     client_associations = []
     odc_indices = [i for i, odc in enumerate(initial_odcs) if odc in selected_odcs]
     #print(len(selected_odcs))
@@ -494,25 +437,24 @@ def assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, d
             capacities[closest_odc] += client["cpu_cores"]
             client_associations.append((client["oru_id"], closest_odc))
             fiberlength[closest_odc] += selected_distances[closest_odc_idx]
-            fiberlength_clients[client["oru_id"]] = selected_distances[closest_odc_idx]
 
-    return capacities, client_associations,fiberlength, fiberlength_clients
+    return capacities, client_associations,fiberlength
 
 # Example usage in the generate_frame function
-def generate_frame(G, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances):
+def generate_frame(gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances):
     selected_indices = [i for i, x in enumerate(solution) if x > 0.5]
     if not selected_indices:
         return None  # Skip if no ODCs are selected
     selected_odcs = [initial_odcs[i] for i in selected_indices]
     #print(selected_indices)
 
-    capacities, client_associations,_,_ = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
+    capacities, client_associations,_ = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
     active_odcs = {odc: capacity for odc, capacity in capacities.items() if capacity > 0}
     selected_odcs = [odc for odc in selected_odcs if odc in active_odcs]
     client_associations = [(client_id, odc) for client_id, odc in client_associations if odc in active_odcs]
 
     # Generate the plot
-    fig = plot_solution(G, clients, selected_odcs, client_associations, active_odcs, max_distance, max_capacity, gen, num_trials)
+    fig = plot_solution(clients, selected_odcs, client_associations, active_odcs, max_distance, max_capacity, gen, num_trials)
     
     # Convert the plot to an image frame
     fig.canvas.draw()
@@ -521,29 +463,21 @@ def generate_frame(G, gen, num_trials, solution, clients, max_distance, max_capa
     
     return frame
 
-def precompute_distances(G, clients, initial_odcs):
+def precompute_distances(clients, initial_odcs):
     client_coords = np.array([(client["latitude"], client["longitude"]) for client in clients])
     odc_coords = np.array(initial_odcs)
     num_clients = len(clients)
     num_odcs = len(initial_odcs)
-
+    
     distances = np.zeros((num_clients, num_odcs))
     for i in range(num_clients):
-        # distances[i, :] = haversine_np(
-        #     np.full(num_odcs, client_coords[i, 0]),
-        #     np.full(num_odcs, client_coords[i, 1]),
-        #     odc_coords[:, 0],
-        #     odc_coords[:, 1]
-        # )
-        distances[i, :] = manhattan_dist(
-            G,
+        distances[i, :] = haversine_np(
             np.full(num_odcs, client_coords[i, 0]),
             np.full(num_odcs, client_coords[i, 1]),
             odc_coords[:, 0],
             odc_coords[:, 1]
         )
     return distances
-
 
 class BestSolutionTracker:
     def __init__(self, obj_weights):
@@ -567,8 +501,9 @@ class BestSolutionTracker:
         except Exception as e:
             print(f"Error in BestSolutionTracker: {e}")
 
-
 def main():
+    
+    
     parser = argparse.ArgumentParser()
     #problem parameters
     parser.add_argument("-c", "--cpuper100", type=str,default='16',help='cpus per 100MHz')
@@ -587,7 +522,6 @@ def main():
     parser.add_argument("-s", "--seed", type=str, default='1',help='Random State Seed')
     parser.add_argument("-csv", "--csv", type=str, default='/home/ubuntu/',help='Full path where the processed .csvs are')
     parser.add_argument("-opd", "--outputDir", type=str, default='/home/ubuntu/',help='Full path where the results will be saved')
-    parser.add_argument("-cy", "--city", type=str, default='Manaus', help='Dataset city evaluated')
     
 
     args = parser.parse_args()
@@ -602,8 +536,6 @@ def main():
     seed = int(args.seed)
     dataset = args.csv
     outputDir = args.outputDir
-    city = args.city
-    
     
     print("#### Sim Parameters ####")
     print("## Problem Parameters ##")
@@ -620,12 +552,8 @@ def main():
     print("     dataset: ", dataset)
     print("     seed: ", seed)
     print("     outputDir: ", outputDir)
-    print("     city: ", city)
     print("########################")
-
-    graph_name = f'{city}.graphml'
-    G = ox.load_graphml(graph_name)
-
+    
     ## Set Parameters
     start_time = time.time()
 
@@ -642,8 +570,8 @@ def main():
     clients = read_clients(dataset, cpu_per_100mhz) # create dataset
     if num_initial_odcs == 0:
         num_initial_odcs = len(clients)# ODCs = O-RUs
-    initial_odcs= generate_initial_odcs(clients, num_initial_odcs) #get initial locations (lat, lon) of ODCs, based on kmeans 
-    distances = precompute_distances(G, clients, initial_odcs) # distances between ODC and O-RU locations based on haversine formula, where the the earth curvature is considered
+    initial_odcs= generate_initial_odcs(clients, num_initial_odcs, seed) #get initial locations (lat, lon) of ODCs, based on kmeans 
+    distances = precompute_distances(clients, initial_odcs) # distances between ODC and O-RU locations based on haversine formula, where the the earth curvature is considered
   
     ## Create the Problem
     # the evaluate function works along with evaluate_trial function in the minimize method
@@ -661,14 +589,16 @@ def main():
     xtol=1e-8,  # The algorithm stops if the change in decision variables is less than "xtol" for a period of "period" generations
     cvtol=1e-8,  # The algortihm stops if the change in constraints violations is less than "cvtol" for a period of "period" generations
     ftol=1e-8,  # The algortihm stops if the change in objective functions values is less than "ftol" for a period of "period" generations
-    period=60,  # Set the number os generations to evaluate xtol, cvtol and ftol
+    period=num_trials,  # Set the number os generations to evaluate xtol, cvtol and ftol
     n_max_gen=num_trials  # Set the maximum number of generations the algorithm will run
     )
 
     res = minimize(problem, algorithm, termination=termination, seed=seed, verbose=True, callback=custom_callback,save_history=True)
 
     best_solutions_per_generation = best_solution_tracker.best_solutions
-
+    
+  
+    
     if not best_solutions_per_generation:
         print("No best solutions were found during the optimization process.")
         return
@@ -682,13 +612,13 @@ def main():
     # Create a tqdm progress bar for GIF generation
     with tqdm(total=len(best_solutions_per_generation), desc="Generating GIF") as pbar:
         with ProcessPoolExecutor(max_workers=no_processes) as executor:
-            futures = [executor.submit(generate_frame, G, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances) for gen, solution in enumerate(best_solutions_per_generation)]
+            futures = [executor.submit(generate_frame, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances) for gen, solution in enumerate(best_solutions_per_generation)]
             for future in futures:
                 frame = future.result()
                 if frame is not None:  # Skip if no frame is generated
                     frames.append(frame)
                 pbar.update(1)
-
+    
     #for trial in range(len(res.X)):
     #print(len(res.X))
     debug = 0
@@ -697,7 +627,8 @@ def main():
             plot_results(res, initial_odcs, clients, trial, outputDir)
     else:
         plot_results2(res, initial_odcs, clients, best_solution_tracker.best_idx, outputDir)
-
+    
+    
     #Convergence plot
     history = res.history
     generations = len(history)
@@ -724,17 +655,18 @@ def main():
         'generations': x_array,
         'avg_obj': avg_obj
     }
-
+    
     # Create a DataFrame
     dfConvergence = pd.DataFrame(data)
     dfConvergence.to_csv(outputDir+"/"+'dfConvergence.csv', index=False)
+    
 
     # Plot the final solution (best of the last generation)
     best_solution = best_solutions_per_generation[-1]
     selected_indices = [i for i, x in enumerate(best_solution) if x > 0.5] #solution vector has values between 0 and 1, 0.5 seems to be a intermediate standard value for this problem
     selected_odcs = [initial_odcs[i] for i in selected_indices]
 
-    capacities, client_associations,fiberlength, fiberlength_clients = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
+    capacities, client_associations,fiberlength = assign_clients_to_odcs_using_precomputed_distances(clients, selected_odcs, distances, initial_odcs)
     #active_odcs = {odc: capacity for odc, capacity in capacities.items() if capacity > 0}
     active_odcs = {
         odc: {'capacity': capacity, 'fiberlength': fiberlength[odc]}
@@ -743,6 +675,7 @@ def main():
         }   
     selected_odcs = [odc for odc in selected_odcs if odc in active_odcs]
     client_associations = [(client_id, odc) for client_id, odc in client_associations if odc in active_odcs]
+    
 
     print("ODC Locations and Capacities:")
     for odc, values in active_odcs.items():
@@ -752,19 +685,19 @@ def main():
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time:.2f} seconds")
 
-    #imageio.mimsave('optimization_process.gif', frames, fps=2)
-    #os.makedirs(outputDir+"/data", exist_ok=True)
 
+    #imageio.mimsave('optimization_process.gif', frames, fps=2)
+    
+    #os.makedirs(outputDir+"/data", exist_ok=True)
+    
     df_client_association = pd.DataFrame([(oru, tuple(map(float, odc))) for oru, odc in client_associations],columns=['oru', 'odc_location'])
     df_capacities = pd.DataFrame([(tuple(map(float, loc)), cap) for loc, cap in capacities.items()], columns=['odc_locations', 'capacities'])
     df_fiberlength = pd.DataFrame([(tuple(map(float, loc)), fiber) for loc, fiber in fiberlength.items()],columns=['odc_locations', 'fiberlength'])
-    df_fiberlength_clients = pd.DataFrame(fiberlength_clients.items(), columns=['oru','fiberlength'])
-
+    
     df_client_association.to_csv(outputDir+"/"+"df_client_association"+".csv")
     df_capacities.to_csv(outputDir+"/"+"df_capacities"+".csv")
     df_fiberlength.to_csv(outputDir+"/"+"df_fiberlength"+".csv")
-    df_fiberlength_clients.to_csv(outputDir+"/"+"df_fiberlength_clients"+".csv")
-
+    
     imageio.mimsave(outputDir+"/"+'optimization_process.gif', frames, fps=2)
 
 if __name__ == "__main__":
