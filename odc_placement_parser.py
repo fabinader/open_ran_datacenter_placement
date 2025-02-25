@@ -16,9 +16,7 @@ from sklearn.cluster import KMeans
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
-from pymoo.termination.default import DefaultSingleObjectiveTermination
-#from pymoo.util.termination.default import SingleObjectiveDefaultTermination
-from pymoo.termination.default import DefaultSingleObjectiveTermination
+from pymoo.termination import get_termination
 #from pymoo.util.display import Display
 from functools import partial
 import math  # Add this import
@@ -522,8 +520,8 @@ def main():
     parser.add_argument("-s", "--seed", type=str, default='1',help='Random State Seed')
     parser.add_argument("-csv", "--csv", type=str, default='/home/ubuntu/',help='Full path where the processed .csvs are')
     parser.add_argument("-opd", "--outputDir", type=str, default='/home/ubuntu/',help='Full path where the results will be saved')
+    parser.add_argument("-gif", "--gif", action="store_true", help="Create a GIF of the optimization process")
     
-
     args = parser.parse_args()
     cpu_per_100mhz=int(args.cpuper100)
     max_distance = int(args.maxdistance)
@@ -536,6 +534,7 @@ def main():
     seed = int(args.seed)
     dataset = args.csv
     outputDir = args.outputDir
+    gif=args.gif
     
     print("#### Sim Parameters ####")
     print("## Problem Parameters ##")
@@ -552,6 +551,7 @@ def main():
     print("     dataset: ", dataset)
     print("     seed: ", seed)
     print("     outputDir: ", outputDir)
+    print("     gif: ", gif)
     print("########################")
     
     ## Set Parameters
@@ -585,13 +585,7 @@ def main():
     def custom_callback(algorithm):
         best_solution_tracker.update(algorithm)
     
-    termination = DefaultSingleObjectiveTermination(
-    xtol=1e-8,  # The algorithm stops if the change in decision variables is less than "xtol" for a period of "period" generations
-    cvtol=1e-8,  # The algortihm stops if the change in constraints violations is less than "cvtol" for a period of "period" generations
-    ftol=1e-8,  # The algortihm stops if the change in objective functions values is less than "ftol" for a period of "period" generations
-    period=num_trials,  # Set the number os generations to evaluate xtol, cvtol and ftol
-    n_max_gen=num_trials  # Set the maximum number of generations the algorithm will run
-    )
+    termination = get_termination("n_gen", num_trials)
 
     res = minimize(problem, algorithm, termination=termination, seed=seed, verbose=True, callback=custom_callback,save_history=True)
 
@@ -609,15 +603,16 @@ def main():
     if len(best_solutions_per_generation) != num_trials:
         print(f"Warning: Expected {num_trials} solutions, but found {len(best_solutions_per_generation)}")
 
-    # Create a tqdm progress bar for GIF generation
-    with tqdm(total=len(best_solutions_per_generation), desc="Generating GIF") as pbar:
-        with ProcessPoolExecutor(max_workers=no_processes) as executor:
-            futures = [executor.submit(generate_frame, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances) for gen, solution in enumerate(best_solutions_per_generation)]
-            for future in futures:
-                frame = future.result()
-                if frame is not None:  # Skip if no frame is generated
-                    frames.append(frame)
-                pbar.update(1)
+    if gif:
+        # Create a tqdm progress bar for GIF generation
+        with tqdm(total=len(best_solutions_per_generation), desc="Generating GIF") as pbar:
+            with ProcessPoolExecutor(max_workers=no_processes) as executor:
+                futures = [executor.submit(generate_frame, gen, num_trials, solution, clients, max_distance, max_capacity, initial_odcs, distances) for gen, solution in enumerate(best_solutions_per_generation)]
+                for future in futures:
+                    frame = future.result()
+                    if frame is not None:  # Skip if no frame is generated
+                        frames.append(frame)
+                    pbar.update(1)
     
     #for trial in range(len(res.X)):
     #print(len(res.X))
@@ -698,7 +693,8 @@ def main():
     df_capacities.to_csv(outputDir+"/"+"df_capacities"+".csv")
     df_fiberlength.to_csv(outputDir+"/"+"df_fiberlength"+".csv")
     
-    imageio.mimsave(outputDir+"/"+'optimization_process.gif', frames, fps=2)
+    if gif:
+    	imageio.mimsave(outputDir+"/"+'optimization_process.gif', frames, fps=2)
 
 if __name__ == "__main__":
     main()
