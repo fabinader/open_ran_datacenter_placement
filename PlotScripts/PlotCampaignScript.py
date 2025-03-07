@@ -238,6 +238,15 @@ class openSimulation:
                             ylabel = 'Fiberlength (kms)'
                             xlabelcdf = "(kms)"
                             #print(CurSimuFile)
+                        elif metric.split('-')[0] == 'Number_ODCs':
+                            CurSimuFile = resultsDir +"/JOB"+str(iJob)+"/Sim_"+str(isim)+"/df_capacities.csv"
+                            num_rows = len(pd.read_csv(CurSimuFile))
+                            dfmetricA = pd.DataFrame({'Number_ODCs': [num_rows]})
+                            column = 'Number_ODCs'
+                            dfmetric = pd.concat([dfmetric, dfmetricA], ignore_index=True)
+                            ylabel = 'Number of ODCs'
+                            xlabelcdf = ""
+                            #print(CurSimuFile)
 
                     #Getting Overall Metrics        
                     if metric.split('-')[1] == 'System':
@@ -535,7 +544,8 @@ if lgraphs == 'MACRO':
                          'Capacity-'+graph+'-CDF',
                          'Fiberlength-'+graph+'-CDF',
                          'Capacity-'+graph,                        
-                         'Fiberlength-'+graph
+                         'Fiberlength-'+graph,
+                         'Number_ODCs-'+graph
                          ]
 
 doc=[]

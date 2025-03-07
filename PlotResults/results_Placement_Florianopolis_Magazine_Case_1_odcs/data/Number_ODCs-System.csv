@@ -1,0 +1,11 @@
+,0
+"case_1: wcpu 0, wodc 0.1, wd 0.9",45.23
+"case_1: wcpu 0, wodc 0.2, wd 0.8",15.11
+"case_1: wcpu 0, wodc 0.3, wd 0.7",9.02
+"case_1: wcpu 0, wodc 0.4, wd 0.6",6.07
+"case_1: wcpu 0, wodc 0.5, wd 0.5",4.91
+"case_1: wcpu 0, wodc 0.6, wd 0.4",4.94
+"case_1: wcpu 0, wodc 0.7, wd 0.3",4.93
+"case_1: wcpu 0, wodc 0.8, wd 0.2",4.94
+"case_1: wcpu 0, wodc 0.9, wd 0.1",4.96
+x,0
