@@ -16,9 +16,7 @@ from sklearn.cluster import KMeans
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
-from pymoo.termination.default import DefaultMultiObjectiveTermination
-from pymoo.operators.mutation.pm import PM
-from pymoo.operators.crossover.sbx import SBX
+from pymoo.termination import get_termination
 #from pymoo.util.display import Display
 from functools import partial
 import math  # Add this import
@@ -579,32 +577,22 @@ def main():
     # the evaluate function works along with evaluate_trial function in the minimize method
     problem = ODCPlacementProblem(clients, initial_odcs, max_distance, max_capacity, cpu_per_100mhz, no_processes, distances, obj_weights)
     # define which algorithm will be used to minimize, this case the NSGA2 
-    mutation = PM(eta=20)  # Valores aceitáveis: entre 15~50
-    crossover = SBX(eta=15, prob=0.9)  # Valores aceitáveis: 10~15
-    algorithm = NSGA2(
-    	pop_size=population_size,
-    	crossover=crossover,
-    	mutation=mutation)
-    	
+    algorithm = NSGA2(pop_size=population_size)
+
     #     
     best_solution_tracker = BestSolutionTracker(obj_weights)
 
     def custom_callback(algorithm):
         best_solution_tracker.update(algorithm)
     
-    termination = DefaultMultiObjectiveTermination(
-    xtol=1e-14,  # The algorithm stops if the change in decision variables is less than "xtol" for a period of "period" generations
-    cvtol=1e-14,  # The algortihm stops if the change in constraints violations is less than "cvtol" for a period of "period" generations
-    ftol=1e-14,  # The algortihm stops if the change in objective functions values is less than "ftol" for a period of "period" generations
-    period=10,  # Set the number os generations to evaluate xtol, cvtol and ftol
-    n_max_gen=num_trials  # Set the maximum number of generations the algorithm will run
-    )
+    termination = get_termination("n_gen", num_trials)
 
     res = minimize(problem, algorithm, termination=termination, seed=seed, verbose=True, callback=custom_callback,save_history=True)
 
     best_solutions_per_generation = best_solution_tracker.best_solutions
     
   
+    
     if not best_solutions_per_generation:
         print("No best solutions were found during the optimization process.")
         return
