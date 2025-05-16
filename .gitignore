@@ -1,2 +1,5 @@
-Results/
-Testes/
+output/
+tests/
+src/__pycache__
+src/heuristics/__pycache__
+visualization/__pycache__
