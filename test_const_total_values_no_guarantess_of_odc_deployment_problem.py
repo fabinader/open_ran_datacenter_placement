@@ -371,30 +371,6 @@ def analyze_results(result, orus, odcs, distances, args):
     plt.close()
 
     # --- Plotar Hipervolume ---
-    # print("Valores mínimos e máximos de cada objetivo:")
-    # print(f"f1: min = {np.min(result.F[:, 0]):.6f}, max = {np.max(result.F[:, 0]):.6f}")
-    # print(f"f2: min = {np.min(result.F[:, 1]):.6f}, max = {np.max(result.F[:, 1]):.6f}")
-
-    # # Cálculo do Hipervolume
-    # ref_point = np.array([285000, 132000.0])
-    # indicator_hv = Hypervolume(ref_point=ref_point)
-    # hv = indicator_hv.do(result.F)
-    # print(f"Hipervolume final: {hv:.4f}")
-
-    # # Evolução do Hipervolume
-    # hv_history = []
-    # for entry in result.history:
-    #     F = entry.pop.get("F")
-    #     hv_history.append(indicator_hv.do(F))
-
-    # plt.figure(figsize=(8, 5))
-    # plt.plot(hv_history, marker='o', linestyle='-', color='green')
-    # plt.title("Convergência do Hipervolume")
-    # plt.xlabel("Geração")
-    # plt.ylabel("Hipervolume")
-    # plt.grid(True)
-    # plt.show()
-
     if F.shape[0] > 0:  # Verifica se há soluções para calcular o hipervolume
         print("\nValores mínimos e máximos de cada objetivo na fronteira de Pareto:")
         # Lembre-se que F[:,0] é -capacidade
@@ -449,55 +425,6 @@ def analyze_results(result, orus, odcs, distances, args):
         print("Nenhuma solução na fronteira de Pareto para calcular o hipervolume.")
 
     # --- Salvar resultados em CSV ---
-
-    # solutions = []
-    # for i, x in enumerate(result.X):
-    #     x_matrix = x.reshape((len(orus), len(odcs)))
-    #     capacity = -result.F[i, 0]
-    #     total_distance = result.F[i, 1]
-
-    #     # Mapear alocações
-    #     allocations = []
-    #     for o in range(len(orus)):
-    #         c = np.where(x_matrix[o,:] == 1)[0][0]
-    #         allocations.append({
-    #             "ORU_ID": orus[o]['oru_id'],
-    #             "ODC_ID": c,
-    #             "Distance_km": distances[o,c],
-    #             "CPU_Cores": orus[o]['cpu_cores']
-    #         })
-
-    #     solutions.append({
-    #         "Solution_ID": i,
-    #         "Total_Capacity": capacity,
-    #         "Total_Distance": total_distance,
-    #         "Allocations": allocations
-    #     })
-
-    # # Converter para DataFrame e salvar
-    # df_solutions = pd.DataFrame([{
-    #     "Solution_ID": sol["Solution_ID"],
-    #     "Total_Capacity": sol["Total_Capacity"],
-    #     "Total_Distance": sol["Total_Distance"]
-    # } for sol in solutions])
-
-    # df_allocations = pd.DataFrame([
-    #     {
-    #         "Solution_ID": sol["Solution_ID"],
-    #         "ORU_ID": alloc["ORU_ID"],
-    #         "ODC_ID": alloc["ODC_ID"],
-    #         "Distance_km": alloc["Distance_km"],
-    #         "CPU_Cores": alloc["CPU_Cores"]
-    #     }
-    #     for sol in solutions
-    #     for alloc in sol["Allocations"]
-    # ])
-
-    # df_solutions.to_csv(f"{args.output_dir}/solutions_summary.csv", index=False)
-    # df_allocations.to_csv(f"{args.output_dir}/allocations_detail.csv", index=False)
-
-    # return solutions
-
     O = len(orus)
     C = len(odcs)
     solutions_data = []
@@ -571,14 +498,6 @@ def analyze_results(result, orus, odcs, distances, args):
     return solutions_data # Retorna os dados processados
 
 def is_the_problem_feasible(args, orus, odcs, distances):
-    # print(f'Demanda total de processamento: {np.sum(oru["cpu_cores"] for oru in orus)}')
-    # print(f'Capacidade total de processamento: {args.max_capacity*args.num_odcs}')
-
-    # for o, oru in enumerate(distances):
-        # print(f'Distância média da O-RU {o} às ODCs: {np.mean(oru)}')
-
-    # print(f'Distância média de cada O-RU às ODCs: {np.mean(distances, axis=1)}')
-
     print("\n--- Diagnóstico de Distâncias e Capacidades ---")
 
     O = len(orus)
