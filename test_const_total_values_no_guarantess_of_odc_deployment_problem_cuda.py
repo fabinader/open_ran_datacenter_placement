@@ -1,6 +1,16 @@
 # Standard imports
 import numpy as np
-import cupy as cp
+
+# Tenta importar CuPy, e define um placeholder se não estiver disponível
+try:
+    import cupy as cp
+    CUDA_AVAILABLE = True
+    print("CuPy importado com sucesso. Usando GPU.")
+except ImportError:
+    cp = np # Fallback para NumPy se CuPy não estiver disponível
+    CUDA_AVAILABLE = False
+    print("CuPy não encontrado. Usando NumPy (CPU) como fallback.")
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import locale
@@ -9,6 +19,8 @@ import math
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.cluster import KMeans
 import re
+import time # Para medir o tempo
+import os # Para criar diretórios
 
 # pymoo imports
 from pymoo.core.problem import Problem
@@ -28,7 +40,10 @@ from pymoo.core.problem import StarmapParallelization
 from src.config import SimulationConfig
 
 # Set locale to ensure dot-separated decimal representation
-locale.setlocale(locale.LC_NUMERIC, 'C')
+try:
+    locale.setlocale(locale.LC_NUMERIC, 'C')
+except locale.Error:
+    print("Aviso: Não foi possível definir o locale para 'C'. Usando o locale padrão do sistema.")
 
 
 class Utils():
@@ -159,174 +174,182 @@ class Utils():
         return distances
 
 
-class MOFLP(Problem):
-    def __init__(self, args, orus, odcs, distances):
-        """
-        :param orus: Lista de O-RUs (dicionários com informações, incluindo 'cpu_cores').
-        :param odcs: Lista de ODCs (usado para determinar self.C).
-        :param distances: Matriz de distâncias pré-computadas [O x C] (NumPy array).
-        :param args: Objeto de configuração, contendo:
-                     args.max_capacity: Capacidade de processamento de cada ODC (vCPU).
-                                        Pode ser um escalar ou um array [C].
-                     args.max_distance: Distância máxima permitida (km).
-        """
-        self.orus = orus
-        self.odcs = odcs
-        self.distances = distances  # Matriz O x C
+class MOFLP(Problem): # Sua classe MOFLP, com otimizações de memória e CUDA
+    def __init__(self, args, orus, odcs, distances_np): # distances_np é NumPy array da CPU
+        self.orus_data = orus
+        self.odcs_data = odcs # Agora é uma lista de dicts com 'id', 'lat', 'lon'
         self.args = args
 
-        # Parâmetros do problema
-        self.O = len(orus)
-        self.C = len(odcs)
+        self.O = len(self.orus_data)
+        self.C = len(self.odcs_data)
 
         if self.O == 0 or self.C == 0:
-            raise ValueError("Número de ORUs ou ODCs não pode ser zero.")
+            raise ValueError("Número de ORUs ou ODCs não pode ser zero para MOFLP.")
 
-        self.lambda_o = np.array([oru['cpu_cores'] for oru in orus])  # Vetor O
-
-        if isinstance(self.args.max_capacity, (list, np.ndarray)):
-            if len(self.args.max_capacity) == self.C:
-                self.mu_c = np.array(self.args.max_capacity)  # Vetor C
+        lambda_o_np_init = np.array([oru['cpu_cores'] for oru in self.orus_data], dtype=np.float32)
+        
+        current_max_capacity = self.args.max_capacity
+        if isinstance(current_max_capacity, (list, np.ndarray)):
+            if len(current_max_capacity) == self.C:
+                mu_c_np_init = np.array(current_max_capacity, dtype=np.float32)
+            elif len(current_max_capacity) == 1:
+                 mu_c_np_init = np.full(self.C, current_max_capacity[0], dtype=np.float32)
             else:
-                raise ValueError("args.max_capacity deve ser um escalar ou uma lista/array com tamanho C.")
+                raise ValueError(f"args.max_capacity como lista/array (tamanho {len(current_max_capacity)}) deve ter tamanho C ({self.C}) ou 1.")
         else:
-            self.mu_c = np.full(self.C, self.args.max_capacity)  # Vetor C
+            mu_c_np_init = np.full(self.C, current_max_capacity, dtype=np.float32)
 
-        self.D_max = args.max_distance
+        self.D_max_val = float(args.max_distance)
+        max_diff_dist = 0.0
+        if distances_np.size > 0:
+             max_diff_dist = np.max(distances_np - self.D_max_val) # distances_np já é float32
+        self.M_val = float(max(1.0, max_diff_dist) + 1.0)
 
-        # Cálculo do Big-M
-        # M deve ser suficientemente grande para que M * y_o,c não restrinja
-        # d_o,c - D_max quando y_o,c = 1.
-        # M >= d_o,c - D_max. Uma escolha segura é M > max(d_o,c - D_max).
-        # Se todas as d_o,c - D_max forem negativas, qualquer M > 0 funciona.
-        # Para garantir que M seja positivo e suficientemente grande:
-        max_diff_dist = np.max(self.distances - self.D_max)
-        self.M = max(1.0, max_diff_dist) + 1.0 # Garante que M seja positivo e maior que a diferença máxima
-                                                # Adicionar 1.0 para folga.
-        # Uma alternativa mais simples e frequentemente usada para M é max(d_o,c) se D_max >= 0
-        # self.M = np.max(self.distances) + 1.0 # Se D_max for muito grande, d-D_max pode ser muito negativo.
+        self._cp = cp if CUDA_AVAILABLE else np
+        
+        if CUDA_AVAILABLE: print("Transferindo dados constantes para a GPU no __init__...")
+        else: print("CUDA não disponível. Usando NumPy para dados (CPU).")
 
-        # Número de variáveis de decisão:
-        # O*C variáveis x_o,c (binárias)
-        # O*C variáveis y_o,c (binárias)
-        # Total: 2 * O * C
+        self.lambda_o_dev = self._cp.asarray(lambda_o_np_init)
+        self.mu_c_dev = self._cp.asarray(mu_c_np_init)
+        self.distances_dev = self._cp.asarray(distances_np) # distances_np já é float32
+        self.D_max_dev = self._cp.float32(self.D_max_val)
+        self.M_dev = self._cp.float32(self.M_val)
+        
+        if CUDA_AVAILABLE: print("Dados constantes no dispositivo.")
+
         n_vars = 2 * self.O * self.C
-
-        # Limites das variáveis (0 ou 1 para binárias)
-        # xl será um vetor de zeros, xu um vetor de uns.
-        xl = np.zeros(n_vars)
-        xu = np.ones(n_vars)
-
-        # Número de objetivos
+        # xl, xu devem ser NumPy arrays para pymoo
+        xl = np.zeros(n_vars, dtype=np.float32)
+        xu = np.ones(n_vars, dtype=np.float32)
         n_obj = 2
-
-        # Número de restrições (todas g_i(X) <= 0):
-        # 1. Atribuição O-RU: sum_c(x_o,c) = 1  => 2 * O restrições
-        #    sum_c(x_o,c) - 1 <= 0
-        #    1 - sum_c(x_o,c) <= 0
-        # 2. Capacidade ODC: sum_o(lambda_o * x_o,c) - mu_c <= 0 => C restrições
-        # 3. Distância Auxiliar 1 (Big-M): d_o,c - D_max - M*y_o,c <= 0 => O*C restrições
-        # 4. Distância Auxiliar 2 (Big-M): x_o,c + y_o,c - 1 <= 0 => O*C restrições
         n_constr = (2 * self.O) + self.C + (2 * self.O * self.C)
 
-        super().__init__(n_var=n_vars,
-                         n_obj=n_obj,
-                         n_constr=n_constr,
-                         xl=xl,
-                         xu=xu)
+        super().__init__(n_var=n_vars, n_obj=n_obj, n_constr=n_constr, xl=xl, xu=xu)
 
-    def _evaluate(self, X_batch, out, *args, **kwargs):
-        # Converte os dados para CuPy (GPU)
-        X_batch = cp.asarray(X_batch)
-        lambda_o = cp.asarray(self.lambda_o)
-        distances = cp.asarray(self.distances)
-        mu_c = cp.asarray(self.mu_c)
+    def _evaluate(self, X_batch_np, out, *args, **kwargs):
+        # X_batch_np é da CPU (NumPy), dtype=float32
+        
+        # Transferir X_batch para o dispositivo (GPU ou permanece como NumPy array)
+        # Evitar re-transferência se já estiver no dispositivo correto (relevante se pymoo otimizar)
+        if isinstance(X_batch_np, self._cp.ndarray):
+            X_batch_dev = X_batch_np # Já está no dispositivo correto
+        else:
+            X_batch_dev = self._cp.asarray(X_batch_np, dtype=self._cp.float32)
 
-        n_solutions = X_batch.shape[0]
 
-        # --- Desempacotar e Remodelar Variáveis ---
-        x_flat_batch = X_batch[:, :self.O * self.C]
-        y_flat_batch = X_batch[:, self.O * self.C:]
+        n_solutions = X_batch_dev.shape[0]
 
+        x_flat_batch = X_batch_dev[:, :self.O * self.C]
+        y_flat_batch = X_batch_dev[:, self.O * self.C:]
+
+        # Para problemas binários, os operadores de pymoo (sampling, crossover, mutation)
+        # devem idealmente fornecer valores que são 0.0 ou 1.0.
+        # Se eles fornecerem valores fracionários, arredondar pode ser uma forma de forçar
+        # a natureza binária, mas pode interferir na forma como o gradiente (implícito) é percebido.
+        # A melhor abordagem é garantir que os operadores gerem binários.
+        # BinaryRandomSampling, TwoPointCrossover, BitflipMutation devem fazer isso.
+        # Se X_batch_dev ainda tiver floats não binários, pode ser devido a como pymoo
+        # lida com 'var_type' internamente ou como os limites xl, xu (floats) são interpretados.
+        # Por ora, vamos assumir que os valores são efetivamente binários.
         x_matrices = x_flat_batch.reshape((n_solutions, self.O, self.C))
         y_matrices = y_flat_batch.reshape((n_solutions, self.O, self.C))
 
-        # --- Cálculo dos Objetivos ---
-        f1_batch = -cp.sum(lambda_o[cp.newaxis, :, cp.newaxis] * x_matrices, axis=(1, 2))
-        f2_batch = cp.sum(distances[cp.newaxis, :, :] * x_matrices, axis=(1, 2))
-        out["F"] = cp.asnumpy(cp.column_stack([f1_batch, f2_batch]))
+        lambda_o_b = self.lambda_o_dev[self._cp.newaxis, :, self._cp.newaxis]
+        distances_b = self.distances_dev[self._cp.newaxis, :, :]
+        mu_c_b = self.mu_c_dev[self._cp.newaxis, :]
 
-        # --- Cálculo das Restrições ---
-        G_batch = cp.zeros((n_solutions, self.n_constr))
+        f1_batch = -self._cp.sum(lambda_o_b * x_matrices, axis=(1, 2))
+        f2_batch = self._cp.sum(distances_b * x_matrices, axis=(1, 2))
+        F_batch_dev = self._cp.column_stack([f1_batch, f2_batch])
+
+        G_batch_dev = self._cp.zeros((n_solutions, self.n_constr), dtype=self._cp.float32)
         idx = 0
 
-        sum_x_over_c = cp.sum(x_matrices, axis=2)  # (n_sols, O)
-        g1 = sum_x_over_c - 1
-        g2 = 1 - sum_x_over_c
-        G_batch[:, idx:idx+self.O] = g1
-        idx += self.O
-        G_batch[:, idx:idx+self.O] = g2
-        idx += self.O
+        sum_x_over_c = self._cp.sum(x_matrices, axis=2)
+        G_batch_dev[:, idx : idx+self.O] = sum_x_over_c - 1.0; idx += self.O
+        G_batch_dev[:, idx : idx+self.O] = 1.0 - sum_x_over_c; idx += self.O
+        
+        sum_lambda_x_o = self._cp.sum(lambda_o_b * x_matrices, axis=1)
+        G_batch_dev[:, idx:idx+self.C] = sum_lambda_x_o - mu_c_b; idx += self.C
+        
+        g_dist_aux1 = distances_b - self.D_max_dev - self.M_dev * y_matrices
+        g_dist_aux2 = x_matrices + y_matrices - 1.0
+        
+        G_batch_dev[:, idx:idx+self.O*self.C] = g_dist_aux1.reshape(n_solutions, -1); idx += self.O*self.C
+        G_batch_dev[:, idx:idx+self.O*self.C] = g_dist_aux2.reshape(n_solutions, -1)
 
-        sum_lambda_x = cp.sum(lambda_o[cp.newaxis, :, cp.newaxis] * x_matrices, axis=1)
-        g3 = sum_lambda_x - mu_c[cp.newaxis, :]
-        G_batch[:, idx:idx+self.C] = g3
-        idx += self.C
-
-        g4 = distances[cp.newaxis, :, :] - self.D_max - self.M * y_matrices
-        g5 = x_matrices + y_matrices - 1
-        G_batch[:, idx:idx+self.O*self.C] = g4.reshape(n_solutions, -1)
-        idx += self.O * self.C
-        G_batch[:, idx:idx+self.O*self.C] = g5.reshape(n_solutions, -1)
-
-        out["G"] = cp.asnumpy(G_batch)
-
+        if CUDA_AVAILABLE:
+            out["F"] = cp.asnumpy(F_batch_dev)
+            out["G"] = cp.asnumpy(G_batch_dev)
+        else:
+            out["F"] = F_batch_dev
+            out["G"] = G_batch_dev
 
 
 def run_nsga2(args, orus, odcs, distances):
-    # Create a problem instance
     problem = MOFLP(args, orus, odcs, distances)
 
-    # --- Configuração da Paralelização ---
-    # Define o número de processos a serem usados.
-    # args.no_processes deve ser definido na sua configuração.
-    # É importante não definir mais processos do que os núcleos disponíveis na CPU.
-    # n_procs = args.no_processes
-    # if n_procs > multiprocessing.cpu_count():
-    #     print(f"Aviso: args.no_processes ({n_procs}) excede o número de CPUs ({multiprocessing.cpu_count()}). Ajustando para {multiprocessing.cpu_count()}.")
-    #     n_procs = multiprocessing.cpu_count()
-    # if n_procs <= 0:  # Caso no_processes não seja positivo
-    #     print(f"Aviso: args.no_processes ({n_procs}) é inválido. Usando 1 processo (sem paralelização explícita).")
-    #     pool = None
-    #     parallelization_setup = None
-    # else:
-    #     pool = multiprocessing.Pool(processes=n_procs)
-    #     parallelization_setup = StarmapParallelization(pool.starmap)
-    #     print(f"Paralelização configurada com {n_procs} processos.")
+    n_procs = args.no_processes 
+    parallelization_setup = None
+    pool = None 
 
+    if n_procs > 1:
+        if CUDA_AVAILABLE:
+            print(f"Aviso: Multiprocessing ({n_procs} processos) com CUDA. Monitore contenção de GPU.")
+        
+        actual_n_procs = min(n_procs, multiprocessing.cpu_count())
+        if actual_n_procs != n_procs:
+            print(f"Ajustando no_processes de {n_procs} para {actual_n_procs}.")
+        n_procs = actual_n_procs
+            
+        if n_procs > 0:
+            try:
+                # Tentar 'spawn' para melhor compatibilidade com CUDA em alguns sistemas
+                # ctx = multiprocessing.get_context('spawn')
+                # pool = ctx.Pool(processes=n_procs)
+                pool = multiprocessing.Pool(processes=n_procs)
+                parallelization_setup = StarmapParallelization(pool.starmap)
+                print(f"Paralelização com multiprocessing: {n_procs} processos.")
+            except Exception as e:
+                print(f"Falha ao criar multiprocessing.Pool: {e}. Modo serial.")
+                if pool: pool.close(); pool.join()
+                pool = None; parallelization_setup = None
+        else: print("Paralelização desabilitada (n_procs <= 0).")
+    else: print(f"Modo serial (no_processes={n_procs}).")
+
+    # Usar var_type=bool para BinaryRandomSampling se as variáveis são realmente binárias
+    # e xl, xu são 0 e 1. Pymoo pode converter para float depois.
+    # Se xl, xu são float32, então BinaryRandomSampling(var_type=np.float32) é consistente.
     algorithm = NSGA2(
         pop_size=args.population_size,
-        sampling=BinaryRandomSampling(),
-        crossover=TwoPointCrossover(),
+        sampling=BinaryRandomSampling(var_type=np.float32), # Amostrar como float32 se xl/xu são float32
+        crossover=TwoPointCrossover(), 
         mutation=BitflipMutation(prob=(1.0 / problem.n_var if problem.n_var > 0 else 0.01)),
         eliminate_duplicates=True,
-        # parallelization=parallelization_setup  # Passa o setup de paralelização
+        parallelization=parallelization_setup 
     )
 
-    # Defines stopping criteria
     termination = get_termination("n_gen", args.num_gen)
 
-    # Executes the optimization
+    print(f"Iniciando NSGA-II (CUDA Habilitado: {CUDA_AVAILABLE}). Pop: {args.population_size}, Gen: {args.num_gen}")
+    start_time = time.time()
     result = minimize(
         problem=problem,
         algorithm=algorithm,
         termination=termination,
         seed=args.seed,
         verbose=True,
-        save_history=True
+        save_history=False # <<< MUDANÇA CRÍTICA PARA MEMÓRIA RAM
     )
+    end_time = time.time()
+    print(f"Otimização concluída em {end_time - start_time:.2f} segundos.")
 
-    return result
+    if pool is not None:
+        pool.close(); pool.join()
+        print("Pool de processos (multiprocessing) fechado.")
+        
+    return result, problem
 
 def analyze_results(result, orus, odcs, distances, args):
     # Analyzing results
