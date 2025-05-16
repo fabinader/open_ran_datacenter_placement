@@ -291,18 +291,18 @@ def run_nsga2(args, orus, odcs, distances):
     # Define o número de processos a serem usados.
     # args.no_processes deve ser definido na sua configuração.
     # É importante não definir mais processos do que os núcleos disponíveis na CPU.
-    n_procs = args.no_processes
-    if n_procs > multiprocessing.cpu_count():
-        print(f"Aviso: args.no_processes ({n_procs}) excede o número de CPUs ({multiprocessing.cpu_count()}). Ajustando para {multiprocessing.cpu_count()}.")
-        n_procs = multiprocessing.cpu_count()
-    if n_procs <= 0:  # Caso no_processes não seja positivo
-        print(f"Aviso: args.no_processes ({n_procs}) é inválido. Usando 1 processo (sem paralelização explícita).")
-        pool = None
-        parallelization_setup = None
-    else:
-        pool = multiprocessing.Pool(processes=n_procs)
-        parallelization_setup = StarmapParallelization(pool.starmap)
-        print(f"Paralelização configurada com {n_procs} processos.")
+    # n_procs = args.no_processes
+    # if n_procs > multiprocessing.cpu_count():
+    #     print(f"Aviso: args.no_processes ({n_procs}) excede o número de CPUs ({multiprocessing.cpu_count()}). Ajustando para {multiprocessing.cpu_count()}.")
+    #     n_procs = multiprocessing.cpu_count()
+    # if n_procs <= 0:  # Caso no_processes não seja positivo
+    #     print(f"Aviso: args.no_processes ({n_procs}) é inválido. Usando 1 processo (sem paralelização explícita).")
+    #     pool = None
+    #     parallelization_setup = None
+    # else:
+    #     pool = multiprocessing.Pool(processes=n_procs)
+    #     parallelization_setup = StarmapParallelization(pool.starmap)
+    #     print(f"Paralelização configurada com {n_procs} processos.")
 
     algorithm = NSGA2(
         pop_size=args.population_size,
@@ -310,7 +310,7 @@ def run_nsga2(args, orus, odcs, distances):
         crossover=TwoPointCrossover(),
         mutation=BitflipMutation(prob=(1.0 / problem.n_var if problem.n_var > 0 else 0.01)),
         eliminate_duplicates=True,
-        parallelization=parallelization_setup  # Passa o setup de paralelização
+        # parallelization=parallelization_setup  # Passa o setup de paralelização
     )
 
     # Defines stopping criteria

@@ -18,7 +18,7 @@ class SimulationConfig:
         parser.add_argument("-p", "--process", type=int, default=8, help='No. of Process')
         #Sim parameters
         parser.add_argument("-s", "--seed", type=int, default=3758522074, help='Random State Seed')
-        parser.add_argument("-csv", "--csv", type=str, default='/home/mbpaiva/Repositories/AITORAN/Open RAN Data Center Placement/open_ran_datacenter_placement/data/Recife.csv', help='Full path where the processed .csvs are')
+        parser.add_argument("-csv", "--csv", type=str, default='./data/Recife.csv', help='Full path where the processed .csvs are')
         parser.add_argument("-opd", "--outputDir", type=str, default='./output/nsga2/', help='Full path where the results will be saved')
         # parser.add_argument("-gif", "--gif", action="store_true", help="Create a GIF of the optimization process")
 
